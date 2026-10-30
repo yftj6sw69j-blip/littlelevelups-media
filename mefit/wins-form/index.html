@@ -104,6 +104,7 @@ $('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new Form
     if(!j.ok)throw new Error(j.msg||'Something went wrong.');
     if(j.fileNote)$('#done .sub').insertAdjacentHTML('afterbegin','Your win is saved, but the file was too big to attach, so send it to Matt on WhatsApp. ');
     lastWin={name:fd.get('name'),win:fd.get('win'),kind:fd.get('kind')||'',share:fd.get('share'),date:new Date().toISOString()};
+    if(file&&file.type.startsWith('image/')){try{lastWin.photoImg=await createImageBitmap(file);}catch(e){}}
     try{const c=await WinCard.draw(document.createElement('canvas'),lastWin);$('#cardimg').src=c.toDataURL('image/png');}catch(e){$('#cardimg').style.display='none';$('#savecard').style.display='none';}
     $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);}
   catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Share my win 🔥';}});

@@ -55,17 +55,27 @@ window.WinCard = (() => {
       ctx.beginPath(); ctx.roundRect((W - tw) / 2, y - 42, tw, 60, 30); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#F4F2EE'; ctx.fillText(w.kind, W / 2, y - 2); y += 50;
     }
-    // the win: largest size that fits
-    const boxTop = y + 70, boxBottom = 1060, maxW = 860;
-    let size = 70, lines;
-    for (; size >= 30; size -= 2) {
-      ctx.font = `600 ${size}px Inter, sans-serif`; lines = wrap(ctx, w.win, maxW);
-      if (lines.length * size * 1.28 <= boxBottom - boxTop) break;
+    // their photo, if they added one: framed under the chip, cover-cropped
+    if (w.photoImg) {
+      const px = 120, py = y + 10, pw = W - 240, ph = 520, im = w.photoImg;
+      const iw = im.width || im.naturalWidth, ih = im.height || im.naturalHeight, k = Math.max(pw / iw, ph / ih);
+      ctx.save(); ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 30); ctx.clip();
+      ctx.drawImage(im, px + (pw - iw * k) / 2, py + (ph - ih * k) / 2, iw * k, ih * k); ctx.restore();
+      ctx.strokeStyle = grad(ctx, px, px + pw); ctx.lineWidth = 4; ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 30); ctx.stroke();
+      y = py + ph - 40;
     }
-    const lh = size * 1.28, blockH = lines.length * lh, top = boxTop + (boxBottom - boxTop - blockH) / 2;
-    ctx.font = '400 190px Anton, Impact, sans-serif'; ctx.fillStyle = grad(ctx, W / 2 - 60, W / 2 + 60); ctx.fillText('“', W / 2, top + 40);
+    // the win: largest size that fits
+    const boxTop = y + 70, boxBottom = 1080, maxW = 860, maxSize = w.photoImg ? 52 : 70;
+    let size = maxSize, lines;
+    for (; size >= 26; size -= 2) {
+      ctx.font = `600 ${size}px Inter, sans-serif`; lines = wrap(ctx, w.win, maxW);
+      if (lines.length * size * 1.28 + (w.photoImg ? 0 : 120) <= boxBottom - boxTop) break;
+    }
+    const lh = size * 1.28, blockH = lines.length * lh + (w.photoImg ? 0 : 120), top = boxTop + (boxBottom - boxTop - blockH) / 2;
+    let ty = top;
+    if (!w.photoImg) { ctx.font = '400 190px Anton, Impact, sans-serif'; ctx.fillStyle = grad(ctx, W / 2 - 60, W / 2 + 60); ctx.fillText('“', W / 2, top + 130); ty = top + 120; }
     ctx.font = `600 ${size}px Inter, sans-serif`; ctx.fillStyle = '#F4F2EE';
-    lines.forEach((l, i) => ctx.fillText(l, W / 2, top + 40 + size + i * lh));
+    lines.forEach((l, i) => ctx.fillText(l, W / 2, ty + size + i * lh));
     // name + date
     ctx.font = '400 66px Anton, Impact, sans-serif'; const nm = displayName(w).toUpperCase(); const nw = ctx.measureText(nm).width;
     ctx.fillStyle = grad(ctx, W / 2 - nw / 2, W / 2 + nw / 2); ctx.fillText(nm, W / 2, 1160);
