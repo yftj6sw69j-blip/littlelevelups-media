@@ -5,7 +5,8 @@ import {readFile} from 'node:fs/promises';
 import {Readable} from 'node:stream';
 const DIR = new URL('.', import.meta.url);
 const DB = 'd8fdb62803774d689d572c5f1dcaa5da';
-const NV = '2022-06-28';
+const NV = '2025-09-03';
+const DS = '956ccced-2859-4460-a02c-10865f085a4e';
 const KINDS = ['PB 🏋️', 'Energy & sleep 😴', 'Confidence 💪', 'Clothes & body 👖', 'Consistency 🔥', 'Something else ✨'];
 const SHARE = ['Yes — with my first name', 'Yes — initial only', 'Yes — anonymously', 'No — just for Matt'];
 const TYPES = {'.html': 'text/html; charset=utf-8', '.png': 'image/png', '.woff2': 'font/woff2'};
@@ -39,7 +40,7 @@ async function createWin(f) {
     catch (e) { console.error(e.message); fileNote = 'file'; }
   }
   const r = await fetch('https://api.notion.com/v1/pages', {method: 'POST', headers: {...H(), 'Content-Type': 'application/json'},
-    body: JSON.stringify({parent: {database_id: DB}, properties: props})});
+    body: JSON.stringify({parent: {type: 'data_source_id', data_source_id: DS}, properties: props})});
   if (!r.ok) { console.error('create page', await r.text()); return {ok: false, status: 502, msg: 'Something went wrong saving your win. Please try again, or send it to Matt on WhatsApp.'}; }
   return {ok: true, fileNote};
 }
