@@ -1,0 +1,154 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your player card · MeFit Academy</title><meta name="theme-color" content="#06070C"><meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Anton;src:url(anton.woff2)}
+@font-face{font-family:Inter;font-weight:400;src:url(inter-latin-400-normal.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(inter-latin-600-normal.woff2)}
+:root{--bg:#06070C;--ink:#F4F2EE;--mute:rgba(244,242,238,.62);--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05);--cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--grad:linear-gradient(90deg,#B845FF,#7C3DFF 50%,#43D9FF)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(ellipse 80% 40% at 50% 14%,rgba(80,40,170,.45),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.2),transparent 70%)}
+main{max-width:520px;margin:0 auto;padding:30px 20px 60px}
+.logo{display:block;height:42px;margin:0 auto 26px}
+.cap{font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:#7FE3FF;text-align:center}
+h1{font-family:Anton;font-weight:400;text-transform:uppercase;text-align:center;line-height:.95;font-size:52px;margin:12px 0 14px}
+h1 span,.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:8px}
+.ringwrap{display:flex;flex-direction:column;align-items:center;margin:22px 0 6px}
+.ring{width:150px;height:150px}
+.ring .t{stroke:rgba(255,255,255,.08)}
+.ring .p{stroke:url(#rg);stroke-linecap:round;transition:stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 0 8px rgba(124,61,255,.7))}
+.lvl{font-family:Anton;font-size:44px;fill:#fff}.lvlc{font:600 11px Inter;letter-spacing:.3em;fill:var(--cyan)}
+.lname{font-weight:600;letter-spacing:.22em;text-transform:uppercase;font-size:13px;margin-top:12px}
+.xp{color:var(--mute);font-size:13px;margin-top:6px}
+.founder{display:none;margin:16px auto 0;width:max-content;padding:9px 16px;border-radius:999px;font-weight:600;font-size:12px;letter-spacing:.24em;text-transform:uppercase;
+ background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;border:1.5px solid transparent;box-shadow:0 0 22px rgba(124,61,255,.35)}
+label.q{display:block;font-weight:600;font-size:15px;margin:28px 0 10px}
+label.q small{display:block;color:var(--mute);font-weight:400;margin-top:4px;font-size:14px}
+input[type=text],textarea{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;color:var(--ink);font:400 17px Inter,sans-serif;padding:15px 16px;outline:none}
+input[type=text]:focus,textarea:focus{border-color:var(--violet)}
+textarea{min-height:96px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips span{display:inline-block;padding:11px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;user-select:none}
+.chips input:checked+span{border-color:transparent;background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;box-shadow:0 0 18px rgba(124,61,255,.35)}
+.stack{display:grid;gap:10px}.stack span{display:block;border-radius:16px}.stack em{display:block;font-style:normal;color:var(--mute);font-size:13px;margin-top:3px}
+.file{display:flex;align-items:center;gap:14px;padding:16px;border:1.5px dashed var(--line);border-radius:16px;background:var(--card);cursor:pointer}
+.file input{display:none}.file b{font-weight:600}.file em{color:var(--mute);font-style:normal;font-size:14px;display:block}
+#preview{display:none;width:220px;height:220px;object-fit:cover;border-radius:50%;margin:16px auto 0;border:3px solid var(--violet);box-shadow:0 0 30px rgba(124,61,255,.5)}
+#nick{display:none;margin-top:10px}
+.hp{position:absolute;left:-9999px}
+button{margin-top:34px;width:100%;border:0;border-radius:18px;padding:19px;font:600 17px Inter,sans-serif;color:#fff;background:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF);cursor:pointer;box-shadow:0 10px 40px rgba(124,61,255,.4)}
+button:disabled{opacity:.6}
+.err{color:#FF8A8A;margin-top:14px;text-align:center;font-size:15px;min-height:20px}
+.note{color:var(--mute);font-size:13px;text-align:center;margin-top:18px;line-height:1.55}
+#formwrap,#done,#bad{display:none}
+#done{text-align:center;padding-top:30px}
+#done .badge{width:130px;height:130px;margin:0 auto 26px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:52px;box-shadow:0 0 60px rgba(124,61,255,.6);animation:pop .7s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+#bad{text-align:center;padding-top:40px}
+.loading{text-align:center;color:var(--mute);padding-top:60px}
+</style></head><body><main>
+<img class="logo" src="logo.png" alt="MeFit Academy">
+<div class="loading" id="loading">Loading your card…</div>
+<section id="bad"><div class="cap">MeFit Members</div><h1>Link not <span>found.</span></h1><p class="sub">This link doesn't look right. Ask Matt for your personal card link.</p></section>
+<section id="formwrap">
+ <div class="cap" id="cap">MeFit Members</div>
+ <h1 id="title">Claim your <span>player card.</span></h1>
+ <p class="sub" id="intro"></p>
+ <div class="ringwrap">
+  <svg class="ring" viewBox="0 0 160 160"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B845FF"/><stop offset=".5" stop-color="#7C3DFF"/><stop offset="1" stop-color="#43D9FF"/></linearGradient></defs>
+   <circle class="t" cx="80" cy="80" r="66" fill="none" stroke-width="14"/>
+   <circle class="p" id="arc" cx="80" cy="80" r="66" fill="none" stroke-width="14" stroke-dasharray="414.7" stroke-dashoffset="414.7" transform="rotate(-90 80 80)"/>
+   <text class="lvl" id="lvl" x="80" y="88" text-anchor="middle">01</text><text class="lvlc" x="80" y="110" text-anchor="middle">LEVEL</text></svg>
+  <div class="lname g" id="lname">The Beginning</div>
+  <div class="xp" id="xp"></div>
+  <div class="founder" id="founder"><span class="g">★ Founding Member</span></div>
+ </div>
+ <form id="f" novalidate>
+  <label class="q">Your photo<small>Head and shoulders, facing the camera, good light, no filters, just you. Sunglasses off your eyes!</small></label>
+  <label class="file"><input type="file" id="photo" accept="image/*"><div style="font-size:30px">📸</div><div><b id="fname">Tap to add a photo</b><em>It sits inside your ring, so a centred face works best.</em></div></label>
+  <img id="preview" alt="">
+  <label class="q" for="cardname">Name on your card<small>First name, initial or a nickname.</small></label>
+  <input type="text" id="cardname" name="cardname" maxlength="20" autocomplete="given-name">
+  <label class="q" for="goal">Your goal, in 2 or 3 words</label>
+  <input type="text" id="goal" name="goal" maxlength="30" placeholder="Get strong, feel confident, run 5k…">
+  <label class="q">When do you mostly train?</label>
+  <div class="chips">
+   <label><input type="radio" name="trains" value="Mornings"><span>🌅 Mornings</span></label>
+   <label><input type="radio" name="trains" value="Lunchtimes"><span>🥪 Lunchtimes</span></label>
+   <label><input type="radio" name="trains" value="Evenings"><span>🌙 Evenings</span></label>
+   <label><input type="radio" name="trains" value="Weekends"><span>📅 Weekends</span></label>
+   <label><input type="radio" name="trains" value="Whenever I can"><span>⚡ Whenever I can</span></label>
+  </div>
+  <label class="q" for="askme">Ask me about…<small>One thing you love outside the gym.</small></label>
+  <input type="text" id="askme" name="askme" maxlength="30" placeholder="My dog, hiking, baking, Arsenal…">
+  <label class="q" for="why" id="whyq">In one sentence, why did you start training with Matt?</label>
+  <textarea id="why" name="why" maxlength="140" placeholder="I wanted to feel strong and confident again."></textarea>
+  <label class="q">Where can Matt share your cards?<small>Level-ups, milestones and PB cards.</small></label>
+  <div class="chips stack">
+   <label><input type="radio" name="share" value="Group + Instagram"><span>📣 WhatsApp group and Instagram stories</span></label>
+   <label><input type="radio" name="share" value="Group only"><span>💬 The client WhatsApp group only</span></label>
+   <label><input type="radio" name="share" value="Just between us"><span>🔒 Just between us<em>You still get your own copy of every card.</em></span></label>
+  </div>
+  <label class="q">How should you appear on leaderboards?</label>
+  <div class="chips stack">
+   <label><input type="radio" name="lb" value="First name"><span>✅ My first name</span></label>
+   <label><input type="radio" name="lb" value="Nickname"><span>🦸 A nickname</span></label>
+   <label><input type="radio" name="lb" value="Private"><span>🕶️ Keep me off leaderboards</span></label>
+  </div>
+  <input type="text" id="nick" name="nickname" maxlength="20" placeholder="Your nickname">
+  <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+  <button id="go" type="submit">Claim my card ⚡</button>
+  <div class="err" id="err"></div>
+  <p class="note">Only Matt sees your answers. Your cards and leaderboards only ever show training progress (your level, sessions and personal bests), never weight, measurements or health details, and only where you've said yes. You can change your mind any time by messaging Matt.</p>
+ </form>
+</section>
+<section id="done"><div class="badge" id="donebadge">01</div><div class="cap">Card claimed</div><h1 id="donetitle">You're <span>in.</span></h1>
+<p class="sub">Matt's making your card now. Keep showing up — every session earns XP. ⚡</p></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);let file=null;
+const q=new URLSearchParams(location.search),M=q.get('m')||'',DEMO=q.has('demo');
+const pad=n=>String(n).padStart(2,'0');
+function show(id){['loading','bad','formwrap','done'].forEach(x=>$('#'+x).style.display=x===id?'block':'none');}
+function fill(d){
+  const first=d.first||'';const isNew=!d.founding;
+  if(isNew){$('#cap').textContent='MeFit Academy';$('#title').innerHTML='Welcome to the <span>team.</span>';
+    $('#intro').textContent=`Hi ${first}! Fill this in and Matt will make your new member card.`;
+    $('#whyq').textContent='In one sentence, what made you message Matt?';$('#go').textContent='Create my card ⚡';}
+  else{$('#intro').textContent=`Hi ${first}! You've already earned ${d.xp} XP. Claim your card and it'll show your real level.`;$('#founder').style.display='block';}
+  $('#lvl').textContent=pad(d.level);$('#lname').textContent=d.levelName;$('#xp').textContent=`${d.xp} XP · ${d.toNext} XP to Level ${pad(d.level+1)}`;
+  $('#donebadge').textContent=pad(d.level);
+  if(!$('#cardname').value)$('#cardname').value=d.cardName||first;
+  if(d.done)$('#intro').textContent+=' (You\'ve sent this before: sending again updates it.)';
+  show('formwrap');
+  requestAnimationFrame(()=>setTimeout(()=>{$('#arc').style.strokeDashoffset=414.7*(1-Math.max(.04,Math.min(1,d.pct)));},250));
+}
+(async()=>{
+  if(DEMO)return fill({first:'Sarah',level:3,levelName:'Building the Habit',xp:233,toNext:42,pct:.44,founding:!q.has('new')});
+  if(!/^[0-9a-f-]{32,36}$/i.test(M))return show('bad');
+  try{const r=await fetch('/api/member?m='+encodeURIComponent(M));if(!r.ok)throw 0;fill(await r.json());}catch(e){show('bad');}
+})();
+async function shrink(f){
+  try{const bmp=await createImageBitmap(f);const s=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.88));return b?new File([b],'card-photo.jpg',{type:'image/jpeg'}):f;}catch(e){return f;}}
+$('#photo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('#fname').textContent='Photo added ✓';
+  file=await shrink(f);$('#preview').src=URL.createObjectURL(file);$('#preview').style.display='block';});
+document.querySelectorAll('input[name=lb]').forEach(r=>r.addEventListener('change',()=>{$('#nick').style.display=r.value==='Nickname'&&r.checked?'block':'none';}));
+$('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData($('#f'));$('#err').textContent='';
+  const need=[[file,'Add your photo first 📸'],[fd.get('cardname').trim(),'Add the name for your card.'],[fd.get('goal').trim(),'Add your goal in a few words.'],
+    [fd.get('trains'),'Pick when you mostly train.'],[fd.get('askme').trim(),'Add one thing people can ask you about.'],[fd.get('why').trim(),'Add your one-sentence reason.'],
+    [fd.get('share'),'Choose where your cards can be shared.'],[fd.get('lb'),'Choose how you appear on leaderboards.']];
+  for(const [ok,msg] of need)if(!ok){$('#err').textContent=msg;return;}
+  if(fd.get('lb')==='Nickname'&&!fd.get('nickname').trim()){$('#err').textContent='Add your nickname.';return;}
+  if(DEMO){show('done');scrollTo(0,0);return;}
+  fd.append('m',M);fd.append('photo',file);
+  $('#go').disabled=true;$('#go').textContent='Sending…';
+  try{const r=await fetch('/card',{method:'POST',body:fd});const j=await r.json();
+    if(!j.ok)throw new Error(j.msg||'Something went wrong.');
+    show('done');scrollTo(0,0);}
+  catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Claim my card ⚡';}});
+</script></body></html>
