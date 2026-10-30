@@ -1,0 +1,96 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Share your win · MeFit Academy</title><meta name="theme-color" content="#06070C">
+<style>
+@font-face{font-family:Anton;src:url(anton.woff2)}
+@font-face{font-family:Inter;font-weight:400;src:url(inter-latin-400-normal.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(inter-latin-600-normal.woff2)}
+:root{--bg:#06070C;--ink:#F4F2EE;--mute:rgba(244,242,238,.62);--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05);--cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--grad:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(ellipse 80% 40% at 50% 18%,rgba(80,40,170,.42),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.2),transparent 70%)}
+main{max-width:520px;margin:0 auto;padding:36px 20px 60px}
+.logo{display:block;height:46px;margin:0 auto 34px}
+.cap{font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:#7FE3FF;text-align:center}
+h1{font-family:Anton;font-weight:400;text-transform:uppercase;text-align:center;line-height:.95;font-size:56px;margin:12px 0 14px}
+h1 span{background:var(--grad);-webkit-background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:30px}
+label.q{display:block;font-weight:600;font-size:15px;margin:26px 0 10px}
+label.q small{color:var(--mute);font-weight:400}
+input[type=text],textarea{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;color:var(--ink);font:400 17px Inter,sans-serif;padding:15px 16px;outline:none}
+input[type=text]:focus,textarea:focus{border-color:var(--violet)}
+textarea{min-height:120px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips span{display:inline-block;padding:11px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;user-select:none}
+.chips input:checked+span{border-color:transparent;background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;box-shadow:0 0 18px rgba(124,61,255,.35)}
+.stack{display:grid;gap:10px}.stack span{display:block;border-radius:16px}
+.file{display:flex;align-items:center;gap:14px;padding:16px;border:1.5px dashed var(--line);border-radius:16px;background:var(--card);cursor:pointer}
+.file input{display:none}.file b{font-weight:600}.file em{color:var(--mute);font-style:normal;font-size:14px;display:block}
+#preview{display:none;width:100%;max-height:320px;object-fit:cover;border-radius:16px;margin-top:12px}
+.hp{position:absolute;left:-9999px}
+button{margin-top:34px;width:100%;border:0;border-radius:18px;padding:19px;font:600 17px Inter,sans-serif;color:#fff;background:var(--grad);cursor:pointer;box-shadow:0 10px 40px rgba(124,61,255,.4)}
+button:disabled{opacity:.6}
+.err{color:#FF8A8A;margin-top:14px;text-align:center;font-size:15px;min-height:20px}
+.note{color:var(--mute);font-size:13px;text-align:center;margin-top:18px;line-height:1.5}
+#done{display:none;text-align:center;padding-top:40px}
+#done .badge{width:130px;height:130px;margin:0 auto 26px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:64px;box-shadow:0 0 60px rgba(124,61,255,.6)}
+#done a{color:var(--cyan)}
+</style></head><body><main>
+<img class="logo" src="logo.png" alt="MeFit Academy">
+<section id="formwrap">
+<div class="cap">Feel Good Friday</div>
+<h1>Share your <span>win.</span></h1>
+<p class="sub">Not a check-in! This is just for celebrating your wins, big or small 🙌</p>
+<form id="f" novalidate>
+ <label class="q" for="name">First name</label>
+ <input type="text" id="name" name="name" autocomplete="given-name" maxlength="60" required>
+ <label class="q" for="win">What's your win?</label>
+ <textarea id="win" name="win" maxlength="1500" placeholder="A PB, better sleep, more energy, jeans feeling looser, turning up when you didn't fancy it…" required></textarea>
+ <label class="q">What kind of win? <small>(optional)</small></label>
+ <div class="chips">
+  <label><input type="radio" name="kind" value="PB 🏋️"><span>🏋️ PB</span></label>
+  <label><input type="radio" name="kind" value="Energy & sleep 😴"><span>😴 Energy & sleep</span></label>
+  <label><input type="radio" name="kind" value="Confidence 💪"><span>💪 Confidence</span></label>
+  <label><input type="radio" name="kind" value="Clothes & body 👖"><span>👖 Clothes & body</span></label>
+  <label><input type="radio" name="kind" value="Consistency 🔥"><span>🔥 Consistency</span></label>
+  <label><input type="radio" name="kind" value="Something else ✨"><span>✨ Something else</span></label>
+ </div>
+ <label class="q">Add a photo or short video <small>(optional)</small></label>
+ <label class="file"><input type="file" id="photo" accept="image/*,video/*"><div style="font-size:30px">📸</div><div><b id="fname">Tap to add</b><em>Photos work best. Long videos are best sent on WhatsApp.</em></div></label>
+ <img id="preview" alt="">
+ <label class="q">Happy for it to be shared?</label>
+ <div class="chips stack">
+  <label><input type="radio" name="share" value="Yes — with my first name"><span>✅ Yes, with my first name</span></label>
+  <label><input type="radio" name="share" value="Yes — initial only"><span>🔤 Yes, initial only</span></label>
+  <label><input type="radio" name="share" value="Yes — anonymously"><span>🕶️ Yes, anonymously</span></label>
+  <label><input type="radio" name="share" value="No — just for Matt"><span>🔒 No, just for Matt</span></label>
+ </div>
+ <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+ <button id="go" type="submit">Share my win 🔥</button>
+ <div class="err" id="err"></div>
+ <p class="note">Only Matt sees what you send. Nothing is posted unless you say you're happy to share, and only in the way you choose.</p>
+</form></section>
+<section id="done"><div class="badge">🏆</div><div class="cap">Win logged</div><h1>Proud of <span>you.</span></h1>
+<p class="sub">Keep stacking them. <a href="/" id="again">Share another win</a></p></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);let file=null;
+async function shrink(f){ // photos -> max 1600px JPEG so they upload fast and stay under size limits
+  if(!f.type.startsWith('image/')||f.type==='image/gif')return f;
+  try{const bmp=await createImageBitmap(f);const s=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));return b?new File([b],(f.name||'win').replace(/\.\w+$/,'')+'.jpg',{type:'image/jpeg'}):f;}catch(e){return f;}}
+$('#photo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('#fname').textContent=f.name||'Added';
+  file=await shrink(f);if(file.type.startsWith('image/')){$('#preview').src=URL.createObjectURL(file);$('#preview').style.display='block';}else $('#preview').style.display='none';});
+$('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData($('#f'));$('#err').textContent='';
+  if(!fd.get('name').trim()||!fd.get('win').trim()){$('#err').textContent='Pop your name and your win in first 🙂';return;}
+  if(!fd.get('share')){$('#err').textContent='Let me know if you\'re happy for it to be shared.';return;}
+  if(file)fd.append('photo',file);
+  $('#go').disabled=true;$('#go').textContent='Sending…';
+  try{const r=await fetch('/submit',{method:'POST',body:fd});const j=await r.json();
+    if(!j.ok)throw new Error(j.msg||'Something went wrong.');
+    if(j.fileNote)$('#done .sub').insertAdjacentHTML('afterbegin','Your win is saved, but the file was too big to attach, so send it to Matt on WhatsApp. ');
+    $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);}
+  catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Share my win 🔥';}});
+</script></body></html>
