@@ -80,7 +80,7 @@ button:disabled{opacity:.6}
 <button id="savecard" type="button">Save my card 📲</button>
 <p class="sub" style="margin-top:22px"><a href="/" id="mywins" hidden>See all your wins</a><span id="sep" hidden> · </span><a href="/" id="again">Share another win</a></p></section>
 </main>
-<script src="wincard.js?v=3"></script>
+<script src="wincard.js?v=4"></script>
 <script>
 const $=s=>document.querySelector(s);let file=null,lastWin=null;
 const M=new URLSearchParams(location.search).get('m')||'';
@@ -104,7 +104,9 @@ $('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new Form
     if(!j.ok)throw new Error(j.msg||'Something went wrong.');
     if(j.fileNote)$('#done .sub').insertAdjacentHTML('afterbegin','Your win is saved, but the file was too big to attach, so send it to Matt on WhatsApp. ');
     lastWin={name:fd.get('name'),win:fd.get('win'),kind:fd.get('kind')||'',share:fd.get('share'),date:new Date().toISOString()};
-    if(file&&file.type.startsWith('image/')){try{lastWin.photoImg=await createImageBitmap(file);}catch(e){}}
+    if(file&&/^image\//.test(file.type||'image/')){ // load the photo the same way the preview does (works on every iPhone), bitmap as a fallback
+      try{const im=new Image();im.src=URL.createObjectURL(file);await (im.decode?im.decode():new Promise((ok,no)=>{im.onload=ok;im.onerror=no;}));lastWin.photoImg=im;}
+      catch(e){try{lastWin.photoImg=await createImageBitmap(file);}catch(e2){}}}
     try{const c=await WinCard.draw(document.createElement('canvas'),lastWin);$('#cardimg').src=c.toDataURL('image/png');}catch(e){$('#cardimg').style.display='none';$('#savecard').style.display='none';}
     $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);}
   catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Share my win 🔥';}});
