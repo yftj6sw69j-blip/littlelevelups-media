@@ -19,7 +19,7 @@ const CARD_TRAINS = ['Mornings', 'Lunchtimes', 'Evenings', 'Weekends', 'Whenever
 const FOUNDING_BEFORE = '2026-11-01';
 const nid = s => String(s || '').replace(/-/g, '').toLowerCase();
 const levelCost = L => L === 1 ? 100 : 75 + 25 * (L - 2); // XP needed to go from level L to L+1
-const TYPES = {'.html': 'text/html; charset=utf-8', '.png': 'image/png', '.woff2': 'font/woff2'};
+const TYPES = {'.html': 'text/html; charset=utf-8', '.png': 'image/png', '.woff2': 'font/woff2', '.js': 'text/javascript; charset=utf-8'};
 const H = () => ({Authorization: `Bearer ${process.env.NOTION_TOKEN}`, 'Notion-Version': NV});
 const clip = (s, n) => String(s || '').trim().slice(0, n);
 
@@ -44,6 +44,10 @@ async function createWin(f) {
     'Happy for it to be shared?': {select: {name: share}},
   };
   if (KINDS.includes(kind)) props['What kind of win?'] = {select: {name: kind}};
+  // link the win to the member: their personal link (?m=) first, otherwise a first name that matches exactly one member
+  let member = null;
+  try { member = (await memberPage(f.get('m')))?.id || await memberByFirstName(name); } catch (e) { console.error('member link', e.message); }
+  if (member) props['Member'] = {relation: [{id: member}]};
   const file = f.get('photo');
   if (file && typeof file === 'object' && file.size > 0) {
     try { const id = await uploadFile(file); props['Photo or video (optional)'] = {files: [{type: 'file_upload', file_upload: {id}, name: clip(file.name || 'win', 90)}]}; }
@@ -52,7 +56,30 @@ async function createWin(f) {
   const r = await fetch('https://api.notion.com/v1/pages', {method: 'POST', headers: {...H(), 'Content-Type': 'application/json'},
     body: JSON.stringify({parent: {type: 'data_source_id', data_source_id: DS}, properties: props})});
   if (!r.ok) { console.error('create page', await r.text()); return {ok: false, status: 502, msg: 'Something went wrong saving your win. Please try again, or send it to Matt on WhatsApp.'}; }
-  return {ok: true, fileNote};
+  return {ok: true, fileNote, member: !!member};
+}
+
+async function memberByFirstName(name) {
+  const first = String(name || '').trim().split(/\s+/)[0].toLowerCase(); if (first.length < 2) return null;
+  const r = await fetch(`https://api.notion.com/v1/data_sources/${MEM_DS}/query`, {method: 'POST', headers: {...H(), 'Content-Type': 'application/json'},
+    body: JSON.stringify({filter: {property: 'Name', title: {starts_with: first}}, page_size: 10})});
+  if (!r.ok) { console.error('member search', r.status, await r.text()); return null; }
+  const hits = (await r.json()).results.filter(p => txt(p.properties['Name']).trim().split(/\s+/)[0].toLowerCase() === first);
+  return hits.length === 1 ? hits[0].id : null;
+}
+
+async function listWins(m) {
+  const p = await memberPage(m); if (!p) return null;
+  const r = await fetch(`https://api.notion.com/v1/data_sources/${DS}/query`, {method: 'POST', headers: {...H(), 'Content-Type': 'application/json'},
+    body: JSON.stringify({filter: {property: 'Member', relation: {contains: p.id}}, sorts: [{timestamp: 'created_time', direction: 'descending'}], page_size: 100})});
+  if (!r.ok) { console.error('wins query', r.status, await r.text()); throw new Error('wins query'); }
+  const wins = (await r.json()).results.map(w => {
+    const P = w.properties, f = (P['Photo or video (optional)']?.files || [])[0];
+    const url = f ? (f.file?.url || f.external?.url || null) : null;
+    return {date: w.created_time, kind: P['What kind of win?']?.select?.name || '', win: txt(P['Your win this week']), share: P['Happy for it to be shared?']?.select?.name || '',
+      photo: url, video: !!(f && /\.(mp4|mov|m4v|webm)(\?|$)/i.test(f.name || url || ''))};
+  });
+  return {ok: true, first: txt(p.properties['Card name']) || txt(p.properties['Name']).trim().split(/\s+/)[0], wins};
 }
 
 async function memberPage(m) {
@@ -124,6 +151,10 @@ http.createServer(async (req, res) => {
       const info = await memberInfo(url.searchParams.get('m'));
       res.writeHead(info ? 200 : 404, {'Content-Type': 'application/json', 'Cache-Control': 'no-store'}); return res.end(JSON.stringify(info || {ok: false}));
     }
+    if (url.pathname === '/api/wins') {
+      let out; try { out = await listWins(url.searchParams.get('m')); } catch (e) { out = {ok: false, status: 502}; }
+      res.writeHead(out ? (out.status || 200) : 404, {'Content-Type': 'application/json', 'Cache-Control': 'no-store'}); return res.end(JSON.stringify(out || {ok: false}));
+    }
     if (req.method === 'POST' && url.pathname === '/card') {
       if (+req.headers['content-length'] > 20e6) { res.writeHead(413, {'Content-Type': 'application/json'}); return res.end(JSON.stringify({ok: false, msg: 'That photo is too big. Try another one.'})); }
       const f = await new Request('http://x', {method: 'POST', headers: req.headers, body: Readable.toWeb(req), duplex: 'half'}).formData();
@@ -131,7 +162,7 @@ http.createServer(async (req, res) => {
       res.writeHead(out.status || 200, {'Content-Type': 'application/json'}); return res.end(JSON.stringify(out));
     }
     if (url.pathname === '/health') { res.writeHead(200); return res.end('ok'); }
-    const name = url.pathname === '/' ? 'index.html' : (url.pathname === '/card' || url.pathname === '/welcome') ? 'card.html' : url.pathname.slice(1);
+    const name = url.pathname === '/' ? 'index.html' : (url.pathname === '/card' || url.pathname === '/welcome') ? 'card.html' : url.pathname === '/wins' ? 'wins.html' : url.pathname.slice(1);
     if (!/^[\w.-]+$/.test(name) || !TYPES[name.slice(name.lastIndexOf('.'))]) { res.writeHead(404); return res.end(); }
     const body = await readFile(new URL(name, DIR));
     res.writeHead(200, {'Content-Type': TYPES[name.slice(name.lastIndexOf('.'))], 'Cache-Control': name.endsWith('.html') ? 'no-cache' : 'max-age=86400'});

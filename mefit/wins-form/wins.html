@@ -1,0 +1,68 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your wins · MeFit Academy</title><meta name="theme-color" content="#06070C"><meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Anton;src:url(anton.woff2)}
+@font-face{font-family:Inter;font-weight:400;src:url(inter-latin-400-normal.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(inter-latin-600-normal.woff2)}
+:root{--bg:#06070C;--ink:#F4F2EE;--mute:rgba(244,242,238,.62);--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05);--cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--grad:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(ellipse 80% 40% at 50% 12%,rgba(80,40,170,.42),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.2),transparent 70%)}
+main{max-width:560px;margin:0 auto;padding:36px 20px 60px}
+.logo{display:block;height:46px;margin:0 auto 30px}
+.cap{font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:#7FE3FF;text-align:center}
+h1{font-family:Anton;font-weight:400;text-transform:uppercase;text-align:center;line-height:.95;font-size:56px;margin:12px 0 10px}
+h1 span{background:var(--grad);-webkit-background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:26px}
+.count{display:flex;justify-content:center;gap:12px;margin-bottom:26px}
+.count div{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 18px;text-align:center}
+.count b{display:block;font-family:Anton;font-weight:400;font-size:34px;background:var(--grad);-webkit-background-clip:text;color:transparent}
+.count small{color:var(--mute);font-size:13px}
+.win{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:18px 18px 16px;margin-bottom:14px;animation:in .5s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.kind{font-size:13px;font-weight:600;padding:6px 11px;border-radius:999px;background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;border:1.5px solid transparent}
+.date{color:var(--mute);font-size:13px}
+.text{font-size:17px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.media{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin-top:12px}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px}
+.share{color:var(--mute);font-size:12px}
+.save{border:0;border-radius:14px;padding:11px 16px;font:600 14px Inter,sans-serif;color:#fff;background:var(--grad);cursor:pointer;box-shadow:0 6px 24px rgba(124,61,255,.35);transition:transform .12s}
+.save:active{transform:scale(.95)}
+.btn{display:block;text-align:center;text-decoration:none;margin-top:24px;border-radius:18px;padding:18px;font:600 17px Inter,sans-serif;color:#fff;background:var(--grad);box-shadow:0 10px 40px rgba(124,61,255,.4)}
+.empty,.err{text-align:center;color:var(--mute);line-height:1.6;padding:30px 10px}
+.note{color:var(--mute);font-size:13px;text-align:center;margin-top:20px;line-height:1.5}
+</style></head><body><main>
+<img class="logo" src="logo.png" alt="MeFit Academy">
+<div class="cap">Feel Good Friday</div>
+<h1 id="title">Your <span>wins.</span></h1>
+<p class="sub" id="sub">Loading your wins…</p>
+<div class="count" id="count" hidden></div>
+<div id="list"></div>
+<a class="btn" id="new" href="/">Share a new win 🔥</a>
+<p class="note">This page is private to you. Keep this link to yourself.</p>
+</main>
+<script src="wincard.js"></script>
+<script>
+const $ = s => document.querySelector(s), m = new URLSearchParams(location.search).get('m') || '';
+const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+if (m) $('#new').href = '/?m=' + encodeURIComponent(m);
+(async () => {
+  if (!m) { $('#sub').textContent = 'This page needs your personal link. Ask Matt for it.'; return; }
+  try {
+    const r = await fetch('/api/wins?m=' + encodeURIComponent(m)); const j = await r.json();
+    if (!r.ok || !j.ok) { $('#sub').textContent = 'This link doesn\'t look right. Ask Matt for your personal link.'; return; }
+    $('#title').innerHTML = esc(j.first) + '\'s <span>wins.</span>';
+    if (!j.wins.length) { $('#sub').textContent = ''; $('#list').innerHTML = '<p class="empty">No wins yet. Your first one is waiting 👇</p>'; return; }
+    $('#sub').textContent = 'Every win you\'ve shared with Matt. Tap Save to keep one as a card.';
+    const months = new Set(j.wins.map(w => w.date.slice(0, 7))).size;
+    $('#count').hidden = false; $('#count').innerHTML = `<div><b>${j.wins.length}</b><small>wins</small></div><div><b>${months}</b><small>month${months > 1 ? 's' : ''}</small></div>`;
+    $('#list').innerHTML = j.wins.map((w, i) => `<div class="win" style="animation-delay:${i * .06}s">
+      <div class="top">${w.kind ? `<span class="kind">${esc(w.kind)}</span>` : '<span></span>'}<span class="date">${esc(WinCard.fmtDate(w.date))}</span></div>
+      <div class="text">${esc(w.win)}</div>
+      ${w.photo ? (w.video ? `<video class="media" src="${esc(w.photo)}" controls playsinline></video>` : `<img class="media" src="${esc(w.photo)}" alt="">`) : ''}
+      <div class="row"><span class="share">${esc(w.share || '')}</span><button class="save" data-i="${i}">Save as card</button></div></div>`).join('');
+    document.querySelectorAll('.save').forEach(b => b.addEventListener('click', () => { const w = j.wins[+b.dataset.i]; b.textContent = 'Making your card…'; WinCard.save({...w, name: j.first}, b).finally(() => { if (b.textContent.startsWith('Making')) b.textContent = 'Save as card'; }); }));
+  } catch (e) { $('#sub').textContent = 'Couldn\'t load your wins just now. Try again in a minute.'; }
+})();
+</script></body></html>

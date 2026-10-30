@@ -35,6 +35,9 @@ button:disabled{opacity:.6}
 #done{display:none;text-align:center;padding-top:40px}
 #done .badge{width:130px;height:130px;margin:0 auto 26px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:64px;box-shadow:0 0 60px rgba(124,61,255,.6)}
 #done a{color:var(--cyan)}
+#cardimg{display:block;width:100%;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 50px rgba(124,61,255,.35);animation:pop .6s cubic-bezier(.3,1.5,.5,1) both}
+#done button{margin-top:22px}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(16px)}to{opacity:1;transform:none}}
 </style></head><body><main>
 <img class="logo" src="logo.png" alt="MeFit Academy">
 <section id="formwrap">
@@ -66,15 +69,24 @@ button:disabled{opacity:.6}
   <label><input type="radio" name="share" value="No — just for Matt"><span>🔒 No, just for Matt</span></label>
  </div>
  <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+ <input type="hidden" name="m" id="m">
  <button id="go" type="submit">Share my win 🔥</button>
  <div class="err" id="err"></div>
  <p class="note">Only Matt sees what you send. Nothing is posted unless you say you're happy to share, and only in the way you choose.</p>
 </form></section>
-<section id="done"><div class="badge">🏆</div><div class="cap">Win logged</div><h1>Proud of <span>you.</span></h1>
-<p class="sub">Keep stacking them. <a href="/" id="again">Share another win</a></p></section>
+<section id="done"><div class="cap">Win logged</div><h1>Proud of <span>you.</span></h1>
+<p class="sub">Here's your win as a card. Save it, keep it, share it if you like.</p>
+<img id="cardimg" alt="Your win as a MeFit card">
+<button id="savecard" type="button">Save my card 📲</button>
+<p class="sub" style="margin-top:22px"><a href="/" id="mywins" hidden>See all your wins</a><span id="sep" hidden> · </span><a href="/" id="again">Share another win</a></p></section>
 </main>
+<script src="wincard.js"></script>
 <script>
-const $=s=>document.querySelector(s);let file=null;
+const $=s=>document.querySelector(s);let file=null,lastWin=null;
+const M=new URLSearchParams(location.search).get('m')||'';
+if(M){$('#m').value=M;$('#again').href='/?m='+encodeURIComponent(M);$('#mywins').href='/wins?m='+encodeURIComponent(M);$('#mywins').hidden=false;$('#sep').hidden=false;
+  fetch('/api/member?m='+encodeURIComponent(M)).then(r=>r.ok?r.json():null).then(j=>{if(j&&!$('#name').value)$('#name').value=j.cardName||j.first||'';}).catch(()=>{});}
+$('#savecard').addEventListener('click',()=>{if(lastWin)WinCard.save(lastWin,$('#savecard'));});
 async function shrink(f){ // photos -> max 1600px JPEG so they upload fast and stay under size limits
   if(!f.type.startsWith('image/')||f.type==='image/gif')return f;
   try{const bmp=await createImageBitmap(f);const s=Math.min(1,1600/Math.max(bmp.width,bmp.height));
@@ -91,6 +103,8 @@ $('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new Form
   try{const r=await fetch('/submit',{method:'POST',body:fd});const j=await r.json();
     if(!j.ok)throw new Error(j.msg||'Something went wrong.');
     if(j.fileNote)$('#done .sub').insertAdjacentHTML('afterbegin','Your win is saved, but the file was too big to attach, so send it to Matt on WhatsApp. ');
+    lastWin={name:fd.get('name'),win:fd.get('win'),kind:fd.get('kind')||'',share:fd.get('share'),date:new Date().toISOString()};
+    try{const c=await WinCard.draw(document.createElement('canvas'),lastWin);$('#cardimg').src=c.toDataURL('image/png');}catch(e){$('#cardimg').style.display='none';$('#savecard').style.display='none';}
     $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);}
   catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Share my win 🔥';}});
 </script></body></html>
