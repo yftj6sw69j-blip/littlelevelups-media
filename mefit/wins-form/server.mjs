@@ -165,7 +165,7 @@ http.createServer(async (req, res) => {
     const name = url.pathname === '/' ? 'index.html' : (url.pathname === '/card' || url.pathname === '/welcome') ? 'card.html' : url.pathname === '/wins' ? 'wins.html' : url.pathname.slice(1);
     if (!/^[\w.-]+$/.test(name) || !TYPES[name.slice(name.lastIndexOf('.'))]) { res.writeHead(404); return res.end(); }
     const body = await readFile(new URL(name, DIR));
-    res.writeHead(200, {'Content-Type': TYPES[name.slice(name.lastIndexOf('.'))], 'Cache-Control': name.endsWith('.html') ? 'no-cache' : 'max-age=86400'});
+    res.writeHead(200, {'Content-Type': TYPES[name.slice(name.lastIndexOf('.'))], 'Cache-Control': /\.(html|js)$/.test(name) ? 'no-cache' : 'max-age=86400'});
     res.end(body);
   } catch (e) { console.error(e); if (!res.headersSent) res.writeHead(500); res.end(); }
 }).listen(process.env.PORT || 10000, () => console.log('MeFit wins form up'));
