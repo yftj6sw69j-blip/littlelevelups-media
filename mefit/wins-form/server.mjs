@@ -7,6 +7,9 @@ const DIR = new URL('.', import.meta.url);
 const DB = 'd8fdb62803774d689d572c5f1dcaa5da';
 const NV = '2025-09-03';
 const DS = '956ccced-2859-4460-a02c-10865f085a4e';
+const WL_DS = '7d3b6bfa-af88-4a6e-b7d7-d890c6ba8394'; // MeFit Waitlist
+const WL_LISTS = ['Strong at 40', 'Hybrid 8', 'Other'];
+const ORIGINS = ['https://mefitacademy.co.uk', 'https://www.mefitacademy.co.uk', 'https://app.mefitacademy.co.uk'];
 const KINDS = ['PB 🏋️', 'Energy & sleep 😴', 'Confidence 💪', 'Clothes & body 👖', 'Consistency 🔥', 'Something else ✨'];
 const SHARE = ['Yes — with my first name', 'Yes — initial only', 'Yes — anonymously', 'No — just for Matt'];
 const TYPES = {'.html': 'text/html; charset=utf-8', '.png': 'image/png', '.woff2': 'font/woff2'};
@@ -45,9 +48,28 @@ async function createWin(f) {
   return {ok: true, fileNote};
 }
 
+async function joinWaitlist(b) {
+  const name = clip(b.name, 60), email = clip(b.email, 120).toLowerCase(), list = WL_LISTS.includes(b.list) ? b.list : 'Other';
+  if (b.website) return {ok: true};
+  if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return {ok: false, status: 400, msg: 'Please add your name and a valid email.'};
+  const r = await fetch('https://api.notion.com/v1/pages', {method: 'POST', headers: {...H(), 'Content-Type': 'application/json'},
+    body: JSON.stringify({parent: {type: 'data_source_id', data_source_id: WL_DS}, properties: {
+      'Name': {title: [{text: {content: name}}]}, 'Email': {email}, 'List': {select: {name: list}}, 'Source': {rich_text: [{text: {content: clip(b.source, 80)}}]}}})});
+  if (!r.ok) { console.error('waitlist', await r.text()); return {ok: false, status: 502, msg: 'Could not save that. Please try again.'}; }
+  return {ok: true};
+}
+
 http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://x');
+    if (url.pathname === '/waitlist') {
+      const o = req.headers.origin, cors = ORIGINS.includes(o) ? {'Access-Control-Allow-Origin': o, 'Vary': 'Origin', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type'} : {};
+      if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
+      if (req.method !== 'POST' || +req.headers['content-length'] > 4000) { res.writeHead(400, cors); return res.end(); }
+      let raw = ''; for await (const c of req) { raw += c; if (raw.length > 4000) break; }
+      let out; try { out = await joinWaitlist(JSON.parse(raw)); } catch (e) { console.error(e); out = {ok: false, status: 400}; }
+      res.writeHead(out.status || 200, {...cors, 'Content-Type': 'application/json'}); return res.end(JSON.stringify(out));
+    }
     if (req.method === 'POST' && url.pathname === '/submit') {
       if (+req.headers['content-length'] > 30e6) { res.writeHead(413, {'Content-Type': 'application/json'}); return res.end(JSON.stringify({ok: false, msg: 'That file is too big. Try a photo, or send the video to Matt on WhatsApp.'})); }
       const f = await new Request('http://x', {method: 'POST', headers: req.headers, body: Readable.toWeb(req), duplex: 'half'}).formData();
