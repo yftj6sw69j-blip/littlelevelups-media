@@ -87,11 +87,23 @@ const StackScene: React.FC<{d: LadderData; L: Layout; f: number; still?: boolean
   const slotW = (right - left) / n;
   const plateH = Math.min(34 * L.scale, (L.areaBottom - L.areaTop - 150 * L.scale) / max);
   const baseY = L.areaBottom;
-  const START = 70;
-  const gap = Math.max(3, Math.floor(40 / n));
+  // Timeline (30 fps, 120 bpm): field 70→140, 3rd 150, 2nd 175, drumroll 200→225, #1 slams on the drop at 225.
+  const START = 70, T3 = 150, T2 = 175, ROLL = 200, T1 = 225;
+  const gap = Math.max(3, Math.floor(60 / Math.max(1, n - 3)));
+  const atFor = (rank: number, i: number) => (rank === 1 ? T1 : rank === 2 ? T2 : rank === 3 ? T3 : START + (n - 1 - i) * gap);
   const cx = L.W / 2, cy = (L.areaTop + L.areaBottom) / 2 - 20, R = (L.areaBottom - L.areaTop) * 0.62;
+  const x1 = n ? left + (pos[0] + 0.5) * slotW : cx;
+  const h1 = n ? ents[0].value * plateH : 0;
+  // Camera: slow push-in on the podium through the reveal, settle after the drop. Field dims while the top 3 land.
+  const push = still ? 1 : interpolate(f, [T3 - 10, T1 + 10, T1 + 60], [1, 1.07, 1.03], clamp);
+  const dim = still ? 1 : interpolate(f, [T3 - 10, T3 + 5, T1 + 30, T1 + 50], [1, 0.45, 0.45, 0.9], clamp);
+  const roll = !still && f >= ROLL && f < T1 ? Math.sin((f - ROLL) * (0.5 + (f - ROLL) * 0.06)) : 0;
+  const rollOp = still ? 0 : interpolate(f, [ROLL, ROLL + 6, T1 - 2, T1], [0, 1, 1, 0], clamp);
+  const slam = still ? 0 : interpolate(f, [T1, T1 + 3, T1 + 40], [0, 1, 0], clamp);
+  const shake = !still && f >= T1 && f < T1 + 12 ? Math.sin(f * 2.9) * (12 - (f - T1)) * 1.3 : 0;
+  const wave = (at: number) => (still ? 0 : interpolate(f, [at + 26, at + 60], [0, 1], clamp));
   return (
-    <>
+    <div style={{position: 'absolute', inset: 0, transform: `translate(${shake}px, ${shake * 0.5}px) scale(${push})`, transformOrigin: `${x1}px ${baseY - h1 * 0.5}px`}}>
       {/* strength backdrop: a giant faint weight plate behind the board */}
       <svg width={L.W} height={L.H} style={{position: 'absolute', inset: 0, opacity: ease(f, 20, 60)}}>
         <defs>
@@ -106,15 +118,17 @@ const StackScene: React.FC<{d: LadderData; L: Layout; f: number; still?: boolean
         </defs>
         <circle cx={cx} cy={cy} r={R} fill="url(#plate)" />
         <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(255,255,255,.05)" strokeWidth={2} strokeDasharray="6 14" transform={`rotate(${f * 0.15} ${cx} ${cy})`} />
+        {/* gold spotlight cone over the #1 slot during the drumroll and slam */}
+        <polygon points={`${x1 - 40},${L.areaTop - 260} ${x1 + 40},${L.areaTop - 260} ${x1 + slotW * 0.9},${baseY} ${x1 - slotW * 0.9},${baseY}`} fill="rgba(255,214,120,.14)" opacity={Math.max(rollOp * (0.6 + 0.4 * Math.abs(roll)), slam)} />
       </svg>
       {/* tier lines */}
       {d.tiers.map((t, i) => {
         const y = baseY - t.at * plateH;
         const o = ease(f, 40 + i * 6, 56 + i * 6);
-        const lit = ents.some((e) => e.value >= t.at) && f > START + 40 + t.at * 4;
+        const lit = ents.some((e, k) => e.value >= t.at && f > atFor(k + 1, k) + 10 + t.at * 2.5);
         return (
           <div key={t.name} style={{position: 'absolute', left: 60, right: 60, top: y, opacity: o}}>
-            <div style={{height: 1.5, background: `linear-gradient(90deg, ${TIER_COL[i]}00, ${TIER_COL[i]}${lit ? 'aa' : '40'} 12%, ${TIER_COL[i]}${lit ? 'aa' : '40'} 88%, ${TIER_COL[i]}00)`, transform: `scaleX(${o})`}} />
+            <div style={{height: 1.5, background: `linear-gradient(90deg, ${TIER_COL[i]}00, ${TIER_COL[i]}${lit ? 'aa' : '40'} 12%, ${TIER_COL[i]}${lit ? 'aa' : '40'} 88%, ${TIER_COL[i]}00)`, transform: `scaleX(${o})`, boxShadow: lit ? `0 0 12px ${TIER_COL[i]}66` : 'none'}} />
             <div style={{position: 'absolute', left: 0, top: -28, display: 'flex', alignItems: 'baseline', gap: 8, padding: '3px 10px', borderRadius: 8, background: 'rgba(6,7,12,.7)'}}>
               <span className="cap" style={{fontSize: 13 * L.scale, letterSpacing: '.24em', color: TIER_COL[i], opacity: lit ? 1 : 0.7}}>{t.name}</span>
               <span className="anton" style={{fontSize: 20 * L.scale, opacity: 0.7}}>{t.at}</span>
@@ -122,43 +136,67 @@ const StackScene: React.FC<{d: LadderData; L: Layout; f: number; still?: boolean
           </div>
         );
       })}
-      {/* floor */}
+      {/* floor, with a pulse that runs outwards from #1 on the slam */}
       <div style={{position: 'absolute', left: 60, right: 60, top: baseY + 4, height: 2, background: C.grad, opacity: 0.8 * ease(f, 30, 44)}} />
+      <div style={{position: 'absolute', left: x1 - 600 * slam, width: 1200 * slam, top: baseY, height: 10, borderRadius: 5, background: `radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,214,120,${0.7 * (1 - slam)}), transparent 70%)`}} />
+      {/* drumroll: dashed slot where #1 will land */}
+      {n ? (
+        <div style={{position: 'absolute', left: x1 - 60, width: 120, top: baseY - h1 - 150 * L.scale, height: h1 + 150 * L.scale, borderRadius: 24, border: '2px dashed rgba(255,227,154,.6)', opacity: rollOp, transform: `scale(${1 + roll * 0.03})`, boxShadow: `0 0 ${30 + roll * 30}px rgba(255,200,80,.25)`}}>
+          <div className="cap" style={{position: 'absolute', top: -40 * L.scale, left: -120, right: -120, textAlign: 'center', fontSize: 16 * L.scale, letterSpacing: '.4em', color: '#FFE39A', opacity: 0.7 + 0.3 * Math.abs(roll)}}>Top of the stack…</div>
+        </div>
+      ) : null}
       {/* bars */}
       {ents.map((e, i) => {
         const rank = i + 1;
         const x = left + (pos[i] + 0.5) * slotW;
         const top3 = rank <= 3;
         const barW = Math.min(top3 ? 84 : 64, slotW - 14);
-        const at = START + (n - 1 - i) * gap; // lowest first, leader last
-        const prog = interpolate(f, [at, at + 40], [0, 1], {...clamp, easing: eo});
+        const at = atFor(rank, i);
+        const dur = rank === 1 ? 22 : top3 ? 28 : 40;
+        const prog = interpolate(f, [at, at + dur], [0, 1], {...clamp, easing: rank === 1 ? (t: number) => 1 - Math.pow(1 - t, 4) : eo});
         const plates = e.value * prog;
         const ti = tierIndex(plates, d.tiers);
         const h = plates * plateH;
         const size = (top3 ? [120, 96, 96][rank - 1] : 64) * L.scale;
         const topY = baseY - h;
-        const landed = ease(f, at + 38, at + 46);
+        const landed = ease(f, at + dur - 2, at + dur + 8);
+        const w = top3 ? wave(at + dur - 26) : 0; // shockwave ring from the avatar on landing
+        const sweep = top3 ? interpolate(f, [at + dur, at + dur + 22], [-20, 120], clamp) : -100;
+        const o = top3 ? 1 : dim;
+        const medal = top3 ? ['#FFE39A', '#F2F5FA', '#F7B98A'][rank - 1] : '#fff';
         return (
-          <div key={e.name} style={{position: 'absolute', left: x - slotW / 2, width: slotW, top: 0, height: L.H}}>
+          <div key={e.name} style={{position: 'absolute', left: x - slotW / 2, width: slotW, top: 0, height: L.H, opacity: o}}>
             {new Array(Math.ceil(plates)).fill(0).map((_, k) => {
               const vis = Math.min(1, plates - k);
               const t = tierIndex(k + 1, d.tiers);
               const col = t >= 0 ? TIER_COL[t] : '#8A93A8';
               return <div key={k} style={{position: 'absolute', left: slotW / 2 - barW / 2, width: barW, top: baseY - (k + 1) * plateH + 2, height: plateH - 4, borderRadius: 6, background: `linear-gradient(180deg, ${col}cc, ${col}66)`, boxShadow: `inset 0 1px 0 #fff4, 0 2px 6px #0006`, opacity: vis, transform: `scaleX(${0.6 + 0.4 * vis})`}} />;
             })}
+            {/* light sweep up the stack when a podium stack completes */}
+            {top3 ? <div style={{position: 'absolute', left: slotW / 2 - barW / 2, width: barW, top: baseY - h, height: h, overflow: 'hidden', borderRadius: 6}}><div style={{position: 'absolute', left: 0, right: 0, top: `${100 - sweep}%`, height: '26%', background: 'linear-gradient(180deg, transparent, rgba(255,255,255,.45), transparent)'}} /></div> : null}
+            {/* shockwave */}
+            {top3 && w > 0 && w < 1 ? <div style={{position: 'absolute', left: slotW / 2 - size * (0.5 + w * 1.6), top: topY - size / 2 - 8 - size * (0.5 + w * 1.6) + size / 2 - size / 2, width: size * (1 + w * 3.2), height: size * (1 + w * 3.2), borderRadius: '50%', border: `${3 * (1 - w)}px solid ${medal}`, opacity: (1 - w) * 0.9, transform: `translateY(${-size / 2 + size / 2}px)`}} /> : null}
             <div style={{position: 'absolute', left: slotW / 2 - size / 2, top: topY - size - 8, width: size}}>
-              <Avatar name={e.name} photo={e.photo} size={size} at={at} ring={ti >= 0 ? TIER_RING[ti] : null} pill={top3 ? String(rank) : null} still={still} pulse={rank === 1} />
+              <Avatar name={e.name} photo={e.photo} size={size} at={at + (rank === 1 ? 0 : 6)} ring={ti >= 0 ? TIER_RING[ti] : null} pill={top3 ? String(rank) : null} still={still} pulse={rank === 1} />
             </div>
-            <div style={{position: 'absolute', left: 0, right: 0, top: baseY + 14, textAlign: 'center', opacity: landed}}>
-              <div style={{fontSize: (top3 ? 24 : 19) * L.scale, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{e.name}</div>
-              <div className="anton" style={{fontSize: (top3 ? 34 : 26) * L.scale, color: ti >= 0 ? TIER_COL[ti] : C.text, lineHeight: 1.1}}>{Math.round(plates)}</div>
+            <div style={{position: 'absolute', left: 0, right: 0, top: baseY + 14, textAlign: 'center', opacity: landed, transform: `translateY(${(1 - landed) * 12}px)`}}>
+              <div style={{fontSize: (top3 ? 24 : 19) * L.scale, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: top3 ? medal : C.text}}>{e.name}</div>
+              <div className={rank === 1 ? 'anton gradtext' : 'anton'} style={{fontSize: (top3 ? 36 : 26) * L.scale, color: ti >= 0 ? TIER_COL[ti] : C.text, lineHeight: 1.1}}>{Math.round(plates)}</div>
             </div>
-            {rank === 1 ? <div style={{position: 'absolute', left: slotW / 2 - barW, width: barW * 2, top: topY - 40, height: h + 60, background: `radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,214,120,${0.12 * landed}), transparent 70%)`, pointerEvents: 'none'}} /> : null}
+            {rank === 1 ? <div style={{position: 'absolute', left: slotW / 2 - barW, width: barW * 2, top: topY - 40, height: h + 60, background: `radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,214,120,${0.12 * landed + 0.25 * slam}), transparent 70%)`, pointerEvents: 'none'}} /> : null}
           </div>
         );
       })}
-      {more > 0 ? <div className="cap" style={{position: 'absolute', top: baseY + 80 * L.scale, left: 0, right: 0, textAlign: 'center', fontSize: 14, opacity: 0.45 * ease(f, START + 60, START + 72)}}>+ {more} more stacking plates</div> : null}
-    </>
+      {/* burst particles from #1 on the slam */}
+      {!still && f >= T1 && f < T1 + 50 ? new Array(30).fill(0).map((_, i) => {
+        const t = (f - T1) / 50; const ang = random(`ba${i}`) * Math.PI * 2; const sp = 200 + random(`bs${i}`) * 320; const dd = sp * (1 - Math.pow(1 - t, 3));
+        const col = [C.cyan, C.violet, '#FFE39A', '#F5C76B'][i % 4];
+        return <div key={i} style={{position: 'absolute', left: x1 + Math.cos(ang) * dd, top: baseY - h1 - 70 + Math.sin(ang) * dd - t * 140, width: 5 + random(`bw${i}`) * 6, height: 5 + random(`bw${i}`) * 6, borderRadius: '50%', background: col, opacity: 1 - t, boxShadow: `0 0 10px ${col}`}} />;
+      }) : null}
+      {more > 0 ? <div className="cap" style={{position: 'absolute', top: baseY + 80 * L.scale, left: 0, right: 0, textAlign: 'center', fontSize: 14, opacity: 0.45 * ease(f, START + 60, START + 72) * dim}}>+ {more} more stacking plates</div> : null}
+      {/* white flash on the slam */}
+      <div style={{position: 'absolute', inset: 0, background: `radial-gradient(circle at ${x1}px ${baseY - h1}px, rgba(255,230,160,${0.55 * slam}), rgba(124,61,255,${0.2 * slam}) 30%, transparent 65%)`, pointerEvents: 'none'}} />
+    </div>
   );
 };
 
