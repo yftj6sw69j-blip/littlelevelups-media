@@ -1,8 +1,14 @@
-# MeFit League leaderboard template (Remotion)
+# MeFit League boards (Remotion)
 
-`./render.sh data.json OUTDIR` → `leaderboard-card.png` (1080×1350) and `leaderboard-story.mp4` (1080×1920, 10 s, original music).
+Two board styles, both with ringed member photos:
 
-- data.json shape: see `src/data.ts` (`week`, `daysLeft`, `teamTotal`, `climber`, `entries[{name, workouts}]`, optional `label`, `rollText`, `footer`, `seed`, `music: "bed.wav"`).
-- Final standings: `sample-final.json` (label "Final standings", rollText "And your champion is…", daysLeft 0 hides the countdown).
-- Music is regenerated each render from `seed` (defaults to week), so every week sounds different.
-- Never commit rendered boards or data files here: they contain client first names. Template code only.
+| Mode | Use for | Command | Files |
+|---|---|---|---|
+| `league` (default) | Ranked challenges: November Grind | `./render.sh data.json OUT` | leaderboard-card.png, leaderboard-story.mp4 |
+| `ladder` | Badge challenges: 12 Days of Strong, Step Up, Christmas Keep-Going, Festive Steps | `./render.sh data.json OUT ladder` | badges-card.png, badges-story.mp4 |
+
+- league data: see `src/data.ts` (`week, daysLeft, teamTotal, climber, entries[{name, workouts, photo?}]`, optional `label, rollText, footer, seed`).
+- ladder data: see `src/Ladder.tsx` (`title, season, label, unit, tiers[{name, at}] x5, entries[{name, value, photo?}], daysLeft, footer, seed`).
+- Photos: copy into `public/photos/` at render time and set `photo: "photos/<file>.jpg"`. Missing photo → initials in the ring.
+- NEVER commit member photos, data files or rendered boards here (this repo is public). `.gitignore` blocks public/photos.
+- Music is regenerated per render from `seed` so every board sounds different.

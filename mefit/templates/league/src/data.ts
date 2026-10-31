@@ -1,4 +1,4 @@
-export type Entry = {name: string; workouts: number};
+export type Entry = {name: string; workouts: number; photo?: string}; // photo: path in public/, e.g. photos/becky-wells.jpg
 export type LeagueData = {
   week: number; // week number of the challenge (1-4)
   daysLeft: number; // days left until the deadline
@@ -37,20 +37,20 @@ export const sample: LeagueData = {
   climber: {name: 'Jess', gain: 5},
   music: 'bed.wav',
   entries: [
-    {name: 'Sophie', workouts: 9},
-    {name: 'Dan', workouts: 8},
-    {name: 'Jess', workouts: 8},
-    {name: 'Kerry', workouts: 7},
-    {name: 'Mark', workouts: 6},
-    {name: 'Laura', workouts: 6},
-    {name: 'Becky', workouts: 5},
-    {name: 'Tom', workouts: 5},
-    {name: 'Nat', workouts: 4},
-    {name: 'Gemma', workouts: 4},
+    {name: 'Sophie', workouts: 9, photo: 'avatar-sophie.jpg'},
+    {name: 'Dan', workouts: 8, photo: 'avatar-dan.jpg'},
+    {name: 'Jess', workouts: 8, photo: 'avatar-jess.jpg'},
+    {name: 'Kerry', workouts: 7, photo: 'avatar-kerry.jpg'},
+    {name: 'Mark', workouts: 6, photo: 'avatar-mark.jpg'},
+    {name: 'Laura', workouts: 6, photo: 'avatar-laura.jpg'},
+    {name: 'Becky', workouts: 5, photo: 'avatar-becky.jpg'},
+    {name: 'Tom', workouts: 5, photo: 'avatar-tom.jpg'},
+    {name: 'Nat', workouts: 4, photo: 'avatar-nat.jpg'},
+    {name: 'Gemma', workouts: 4, photo: 'avatar-gemma.jpg'},
     {name: 'Rich', workouts: 3},
-    {name: 'Claire', workouts: 3},
-    {name: 'Hayley', workouts: 2},
-    {name: 'Steve', workouts: 2},
+    {name: 'Claire', workouts: 3, photo: 'avatar-claire.jpg'},
+    {name: 'Hayley', workouts: 2, photo: 'avatar-hayley.jpg'},
+    {name: 'Steve', workouts: 2, photo: 'avatar-steve.jpg'},
     {name: 'Amy', workouts: 1},
   ],
 };

@@ -7,9 +7,9 @@ import sys, wave
 import numpy as np
 
 SR = 44100
-DUR = 10.0
+DUR = 11.0
 BEAT = 0.5
-DROP = 7.0
+DROP = 7.5
 rng = np.random.default_rng(int(sys.argv[1]) if len(sys.argv) > 1 else 1)
 out = sys.argv[2] if len(sys.argv) > 2 else "public/bed.wav"
 N = int(SR * DUR)
