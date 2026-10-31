@@ -4,6 +4,7 @@ import {LeagueStory, T} from './Story';
 import {LeagueCard} from './Card';
 import {LadderStory, LadderCard, ladderSample, stepsSample} from './Ladder';
 import {sample} from './data';
+import {MilestoneStory, MilestoneCard, milestoneSample, MILESTONE_FRAMES} from './Milestone';
 
 export const Root: React.FC = () => (
   <>
@@ -15,5 +16,8 @@ export const Root: React.FC = () => (
     <Still id="LadderCard" component={LadderCard as any} width={1080} height={1350} defaultProps={ladderSample} />
     <Composition id="StepsStory" component={LadderStory as any} durationInFrames={330} fps={30} width={1080} height={1920} defaultProps={stepsSample} />
     <Still id="StepsCard" component={LadderCard as any} width={1080} height={1350} defaultProps={stepsSample} />
+    {/* Member milestone card: 1/3/6 months, 1 year, PB, level-up */}
+    <Composition id="MilestoneStory" component={MilestoneStory as any} durationInFrames={MILESTONE_FRAMES} fps={30} width={1080} height={1920} defaultProps={milestoneSample} />
+    <Still id="MilestoneCard" component={MilestoneCard as any} width={1080} height={1350} defaultProps={milestoneSample} />
   </>
 );
