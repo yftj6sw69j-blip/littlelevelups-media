@@ -2,23 +2,36 @@ import React from 'react';
 import {AbsoluteFill} from 'remotion';
 import {C, LeagueData, Ranked, rankEntries} from './data';
 import {Backdrop, Fonts, Logo} from './shared';
-import {Avatar} from './Avatar';
+import {Avatar, RING} from './Avatar';
 
-const Podium: React.FC<{e: Ranked; x: number; y: number; size: number; hero?: boolean}> = ({e, x, y, size, hero}) => (
-  <div style={{position: 'absolute', left: x - size / 2, top: y - size / 2, width: size, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-    <Avatar name={e.name} photo={(e as any).photo} rank={e.rank} size={size} at={0} still />
-    <div className="anton" style={{marginTop: size * 0.17, fontSize: hero ? 54 : 40, whiteSpace: 'nowrap', letterSpacing: '.02em'}}>{e.name}</div>
-    <div style={{display: 'flex', alignItems: 'baseline', gap: 8}}>
-      <div className={hero ? 'anton gradtext' : 'anton'} style={{fontSize: hero ? 60 : 44}}>{e.workouts}</div>
-      <div className="cap" style={{fontSize: 12, opacity: 0.55, letterSpacing: '.2em'}}>workouts</div>
+const PY_FLOOR = 905;
+const Podium: React.FC<{e: Ranked; x: number; hero?: boolean; lead: number}> = ({e, x, hero, lead}) => {
+  const m = RING[e.rank as 1 | 2 | 3];
+  const h = Math.max(60, (e.workouts / lead) * 170);
+  const w = hero ? 130 : 104; const size = hero ? 210 : 160;
+  return (
+    <div style={{position: 'absolute', left: x - 170, width: 340, top: 0, height: 1350}}>
+      <div style={{position: 'absolute', left: 170 - w / 2, width: w, top: PY_FLOOR - h, height: h, borderRadius: '12px 12px 0 0', background: `linear-gradient(180deg, ${m.a}55, ${m.b}22 60%, ${m.b}08)`, border: `1.5px solid ${m.a}66`, borderBottom: 'none', boxShadow: `0 0 ${hero ? 50 : 24}px ${m.glow}`}}>
+        <div className="anton" style={{position: 'absolute', left: 0, right: 0, bottom: 8, textAlign: 'center', fontSize: hero ? 46 : 36, color: `${m.a}cc`}}>{e.rank}</div>
+      </div>
+      <div style={{position: 'absolute', left: 170 - size / 2, top: PY_FLOOR - h - size - 8, width: size}}>
+        <Avatar name={e.name} photo={(e as any).photo} rank={e.rank} size={size} at={0} still />
+      </div>
+      <div style={{position: 'absolute', left: 40, right: 40, top: PY_FLOOR + 10, textAlign: 'center'}}>
+        <div className="anton" style={{fontSize: hero ? 40 : 32, color: m.a, letterSpacing: '.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{e.name}</div>
+        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 6}}>
+          <div className={hero ? 'anton gradtext' : 'anton'} style={{fontSize: hero ? 48 : 38, lineHeight: 1.05}}>{e.workouts}</div>
+          <div className="cap" style={{fontSize: 11, opacity: 0.55, letterSpacing: '.2em'}}>workouts</div>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const LeagueCard: React.FC<LeagueData> = (d) => {
   const ranked = rankEntries(d.entries);
   const [p1, p2, p3] = ranked;
-  const rest = ranked.slice(3, 13);
+  const rest = ranked.slice(3, 11);
   const more = ranked.length - 3 - rest.length;
   const perCol = Math.ceil(rest.length / 2);
   const cols = [rest.slice(0, perCol), rest.slice(perCol)];
@@ -27,7 +40,7 @@ export const LeagueCard: React.FC<LeagueData> = (d) => {
   if (d.daysLeft > 0) pills.push([`${d.daysLeft}`, 'days left', false]);
   pills.push([`${d.teamTotal}`, 'team workouts', false]);
   if (d.climber) pills.push([`▲ ${d.climber.name} +${d.climber.gain}`, 'climber of the week', true]);
-  const PY = 560;
+  const lead = p1?.workouts ?? 1;
   return (
     <AbsoluteFill style={{color: C.text, fontFamily: 'Inter', fontWeight: 600}}>
       <Fonts />
@@ -47,12 +60,12 @@ export const LeagueCard: React.FC<LeagueData> = (d) => {
           </div>
         ))}
       </div>
-      <AbsoluteFill style={{background: `radial-gradient(circle at 50% ${(PY / 13.5)}%, rgba(255,214,120,.16), transparent 32%)`}} />
-      {p2 ? <Podium e={p2} x={225} y={PY + 50} size={190} /> : null}
-      {p3 ? <Podium e={p3} x={855} y={PY + 50} size={190} /> : null}
-      {p1 ? <Podium e={p1} x={540} y={PY} size={270} hero /> : null}
-      <div style={{position: 'absolute', top: 905, left: 70, right: 70, height: 2, background: C.grad, opacity: 0.7}} />
-      <div style={{position: 'absolute', top: 928, left: 70, right: 70, display: 'flex', gap: 20}}>
+      <AbsoluteFill style={{background: `radial-gradient(circle at 50% ${(PY_FLOOR - 200) / 13.5}%, rgba(255,214,120,.14), transparent 32%)`}} />
+      {p2 ? <Podium e={p2} x={225} lead={lead} /> : null}
+      {p3 ? <Podium e={p3} x={855} lead={lead} /> : null}
+      {p1 ? <Podium e={p1} x={540} lead={lead} hero /> : null}
+      <div style={{position: 'absolute', top: PY_FLOOR, left: 70, right: 70, height: 2, background: C.grad, opacity: 0.8}} />
+      <div style={{position: 'absolute', top: 1010, left: 70, right: 70, display: 'flex', gap: 20}}>
         {cols.map((c, ci) => (
           <div key={ci} style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 8}}>
             {c.map((e) => (
