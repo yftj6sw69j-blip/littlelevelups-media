@@ -1,0 +1,89 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your leaderboard photo · MeFit Academy</title><meta name="theme-color" content="#06070C">
+<style>
+@font-face{font-family:Anton;src:url(anton.woff2)}
+@font-face{font-family:Inter;font-weight:400;src:url(inter-latin-400-normal.woff2)}
+@font-face{font-family:Inter;font-weight:600;src:url(inter-latin-600-normal.woff2)}
+:root{--bg:#06070C;--ink:#F4F2EE;--mute:rgba(244,242,238,.62);--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05);--cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--gold:#F5C76B;--grad:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(ellipse 80% 40% at 50% 18%,rgba(80,40,170,.42),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.2),transparent 70%)}
+main{max-width:520px;margin:0 auto;padding:36px 20px 60px}
+.logo{display:block;height:46px;margin:0 auto 34px}
+.cap{font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:#7FE3FF;text-align:center}
+h1{font-family:Anton;font-weight:400;text-transform:uppercase;text-align:center;line-height:.95;font-size:52px;margin:12px 0 14px}
+h1 span{background:var(--grad);-webkit-background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:26px}
+label.q{display:block;font-weight:600;font-size:15px;margin:26px 0 10px}
+label.q small{color:var(--mute);font-weight:400}
+input[type=text]{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;color:var(--ink);font:400 17px Inter,sans-serif;padding:15px 16px;outline:none}
+input[type=text]:focus{border-color:var(--violet)}
+.ringpick{display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer}
+.ringpick input{display:none}
+.ring{width:190px;height:190px;border-radius:50%;padding:7px;background:linear-gradient(180deg,#FFE8A0,#F5C76B 50%,#BE8732);box-shadow:0 0 50px rgba(245,199,107,.35)}
+.ring div{width:100%;height:100%;border-radius:50%;background:#10121C center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px}
+.ringpick b{font-weight:600;color:var(--cyan);font-size:15px}
+.tip{color:var(--mute);font-size:13px;text-align:center}
+.chips{display:grid;gap:10px}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips span{display:block;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-size:15px;line-height:1.4;cursor:pointer;user-select:none}
+.chips span small{display:block;color:var(--mute);font-size:13px;margin-top:2px}
+.chips input:checked+span{border-color:transparent;background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;box-shadow:0 0 18px rgba(124,61,255,.35)}
+.chips input:focus-visible+span{outline:2px solid var(--cyan);outline-offset:2px}
+.hp{position:absolute;left:-9999px}
+button{margin-top:30px;width:100%;border:0;border-radius:18px;padding:19px;font:600 17px Inter,sans-serif;color:#fff;background:var(--grad);cursor:pointer;box-shadow:0 10px 40px rgba(124,61,255,.4)}
+button:disabled{opacity:.6}
+.err{color:#FF8A8A;margin-top:14px;text-align:center;font-size:15px;min-height:20px}
+.note{color:var(--mute);font-size:13px;text-align:center;margin-top:18px;line-height:1.5}
+#done{display:none;text-align:center;padding-top:30px}
+#done .ring{margin:0 auto 26px;animation:pop .6s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#done .ring{animation:none}}
+</style></head><body><main>
+<img class="logo" src="logo.png" alt="MeFit Academy">
+<section id="formwrap">
+<div class="cap">MeFit League</div>
+<h1>Your <span>leaderboard</span> photo</h1>
+<p class="sub">Pick the pic you'd like in your ring when you make the board. No photo? You'll just show as your initials.</p>
+<form id="f" novalidate>
+ <label class="ringpick" for="photo"><input type="file" id="photo" accept="image/*"><span class="ring"><div id="ringimg">📸</div></span><b id="pickt">Tap to choose your photo</b></label>
+ <p class="tip">Head and shoulders works best. It gets cropped into a circle.</p>
+ <div id="namewrap"><label class="q" for="name">Your first name and surname</label>
+ <input type="text" id="name" name="name" autocomplete="name" maxlength="80" placeholder="As it is in HubFit"></div>
+ <label class="q">Where can I use it?</label>
+ <div class="chips">
+  <label><input type="radio" name="consent" value="Group + Instagram"><span>📣 Leaderboards in the group and on Instagram/Facebook<small>Your photo and first name on MeFit's public posts</small></span></label>
+  <label><input type="radio" name="consent" value="Group only"><span>👥 Group leaderboards only<small>Public posts show your initials instead</small></span></label>
+ </div>
+ <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+ <input type="hidden" name="m" id="m">
+ <button id="go" type="submit">Send my photo</button>
+ <div class="err" id="err" role="alert"></div>
+ <p class="note">Only Matt sees what you send. Change your mind any time: message Matt and he'll take it down.</p>
+</form></section>
+<section id="done"><span class="ring"><div id="doneimg"></div></span><div class="cap">Photo saved</div><h1>You're <span>set.</span></h1>
+<p class="sub" id="donemsg">Now get logging those sessions in HubFit and get yourself on that board 💪</p></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);let file=null;
+const M=new URLSearchParams(location.search).get('m')||'';
+if(M){$('#m').value=M;fetch('/api/member?m='+encodeURIComponent(M)).then(r=>r.ok?r.json():null).then(j=>{if(j){$('#namewrap').hidden=true;$('.sub').textContent='Hi '+(j.cardName||j.first)+'! Pick the pic you\'d like in your ring when you make the board.';}}).catch(()=>{});}
+async function shrink(f){ // square-ish JPEG, max 1200px, so it uploads fast on mobile data
+  if(!f.type.startsWith('image/')||f.type==='image/gif')return f;
+  try{const im=new Image();im.src=URL.createObjectURL(f);await im.decode();
+    const s=Math.min(1,1200/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');
+    c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.88));return b?new File([b],'leaderboard-photo.jpg',{type:'image/jpeg'}):f;}catch(e){return f;}}
+$('#photo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;file=await shrink(f);
+  const u=URL.createObjectURL(file);$('#ringimg').style.backgroundImage='url("'+u+'")';$('#ringimg').textContent='';$('#pickt').textContent='Tap to change';});
+$('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData($('#f'));$('#err').textContent='';
+  if(!file){$('#err').textContent='Choose your photo first 🙂';return;}
+  if(!M&&!fd.get('name').trim()){$('#err').textContent='Pop your first name and surname in.';return;}
+  if(!fd.get('consent')){$('#err').textContent='Let me know where your photo can be used.';return;}
+  fd.append('photo',file);$('#go').disabled=true;$('#go').textContent='Sending…';
+  try{const r=await fetch('/photo',{method:'POST',body:fd});const j=await r.json();if(!j.ok)throw new Error(j.msg||'Something went wrong.');
+    $('#doneimg').style.backgroundImage=$('#ringimg').style.backgroundImage;
+    if(j.first)$('#donemsg').textContent='Thanks '+j.first+'! Now get logging those sessions in HubFit and get yourself on that board 💪';
+    $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);}
+  catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Send my photo';}});
+</script></body></html>

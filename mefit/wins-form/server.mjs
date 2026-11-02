@@ -1,4 +1,4 @@
-// MeFit forms -> Notion: "Share your win" (MeFit Wins), waitlist, and the member card form (MeFit Members). No dependencies (Node 18+).
+// MeFit forms -> Notion: "Share your win" (MeFit Wins), waitlist, the member card form and the leaderboard photo form (MeFit Members). No dependencies (Node 18+).
 // Env: NOTION_TOKEN (internal integration secret, shared with the MeFit Wins page), PORT.
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
@@ -119,6 +119,42 @@ async function saveCard(f) {
   return {ok: true};
 }
 
+// Leaderboard photo form (/photo): a member sends the photo they want in their leaderboard ring, plus where it may be used.
+// Saves to MeFit Members: Photo (file) + Sharing choice (consent). Matched by personal link (?m=) or by name.
+const PHOTO_OK = ['Group + Instagram', 'Group only'];
+async function memberByName(name) {
+  const norm = s => String(s || '').trim().replace(/[.]/g, '').replace(/\s+/g, ' ').toLowerCase();
+  const full = norm(name); if (full.length < 2) return null;
+  const first = full.split(' ')[0];
+  const r = await fetch(`https://api.notion.com/v1/data_sources/${MEM_DS}/query`, {method: 'POST', headers: {...H(), 'Content-Type': 'application/json'},
+    body: JSON.stringify({filter: {property: 'Name', title: {starts_with: first}}, page_size: 25})});
+  if (!r.ok) { console.error('member search', r.status, await r.text()); return null; }
+  const res = (await r.json()).results.filter(p => !p.in_trash && !p.archived);
+  const nm = p => norm(txt(p.properties['Name']));
+  const exact = res.filter(p => nm(p) === full); if (exact.length === 1) return exact[0];
+  const sameFirst = res.filter(p => nm(p).split(' ')[0] === first);
+  const pref = full.includes(' ') ? sameFirst.filter(p => nm(p).startsWith(full)) : sameFirst;
+  return pref.length === 1 ? pref[0] : null;
+}
+async function savePhoto(f) {
+  if (f.get('website')) return {ok: true};
+  const consent = f.get('consent');
+  if (!PHOTO_OK.includes(consent)) return {ok: false, status: 400, msg: 'Please choose where your photo can be used.'};
+  const file = f.get('photo');
+  if (!(file && typeof file === 'object' && file.size > 0)) return {ok: false, status: 400, msg: 'Please add your photo.'};
+  let p = await memberPage(f.get('m'));
+  if (!p) {
+    const name = clip(f.get('name'), 80); if (!name) return {ok: false, status: 400, msg: 'Please add your first name and surname.'};
+    p = await memberByName(name);
+  }
+  if (!p) return {ok: false, status: 404, msg: 'I couldn\'t match that name. Use your first name and surname as they are in HubFit, or send your pic to Matt on WhatsApp.'};
+  let id; try { id = await uploadFile(file); } catch (e) { console.error(e.message); return {ok: false, status: 502, msg: 'Your photo didn\'t upload. Please try a different photo.'}; }
+  const props = {'Photo': {files: [{type: 'file_upload', file_upload: {id}, name: 'leaderboard-photo.jpg'}]}, 'Sharing choice': {select: {name: consent}}};
+  const r = await fetch(`https://api.notion.com/v1/pages/${p.id}`, {method: 'PATCH', headers: {...H(), 'Content-Type': 'application/json'}, body: JSON.stringify({properties: props})});
+  if (!r.ok) { console.error('photo save', await r.text()); return {ok: false, status: 502, msg: 'Something went wrong saving your photo. Please try again, or send it to Matt on WhatsApp.'}; }
+  return {ok: true, first: txt(p.properties['Card name']) || txt(p.properties['Name']).trim().split(/\s+/)[0]};
+}
+
 async function joinWaitlist(b) {
   const name = clip(b.name, 60), email = clip(b.email, 120).toLowerCase(), list = WL_LISTS.includes(b.list) ? b.list : 'Other';
   if (b.website) return {ok: true};
@@ -161,8 +197,14 @@ http.createServer(async (req, res) => {
       let out; try { out = await saveCard(f); } catch (e) { console.error(e); out = {ok: false, status: 502, msg: 'Something went wrong saving your card. Please try again, or message Matt.'}; }
       res.writeHead(out.status || 200, {'Content-Type': 'application/json'}); return res.end(JSON.stringify(out));
     }
+    if (req.method === 'POST' && url.pathname === '/photo') {
+      if (+req.headers['content-length'] > 20e6) { res.writeHead(413, {'Content-Type': 'application/json'}); return res.end(JSON.stringify({ok: false, msg: 'That photo is too big. Try another one.'})); }
+      const f = await new Request('http://x', {method: 'POST', headers: req.headers, body: Readable.toWeb(req), duplex: 'half'}).formData();
+      let out; try { out = await savePhoto(f); } catch (e) { console.error(e); out = {ok: false, status: 502, msg: 'Something went wrong saving your photo. Please try again, or send it to Matt on WhatsApp.'}; }
+      res.writeHead(out.status || 200, {'Content-Type': 'application/json'}); return res.end(JSON.stringify(out));
+    }
     if (url.pathname === '/health') { res.writeHead(200); return res.end('ok'); }
-    const name = url.pathname === '/' ? 'index.html' : (url.pathname === '/card' || url.pathname === '/welcome') ? 'card.html' : url.pathname === '/wins' ? 'wins.html' : url.pathname.slice(1);
+    const name = url.pathname === '/' ? 'index.html' : (url.pathname === '/card' || url.pathname === '/welcome') ? 'card.html' : url.pathname === '/wins' ? 'wins.html' : url.pathname === '/photo' ? 'photo.html' : url.pathname.slice(1);
     if (!/^[\w.-]+$/.test(name) || !TYPES[name.slice(name.lastIndexOf('.'))]) { res.writeHead(404); return res.end(); }
     const body = await readFile(new URL(name, DIR));
     res.writeHead(200, {'Content-Type': TYPES[name.slice(name.lastIndexOf('.'))], 'Cache-Control': /\.(html|js)$/.test(name) ? 'no-cache' : 'max-age=86400'});
