@@ -9,10 +9,10 @@
  --cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--amber:#FFC56B;--grad:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg)}
-body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;overflow-x:clip}
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 40% at 50% 14%,rgba(80,40,170,.45),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.22),transparent 70%)}
-main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:30px max(20px,env(safe-area-inset-right)) 70px max(20px,env(safe-area-inset-left))}
+main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:96px max(20px,env(safe-area-inset-right)) 70px max(20px,env(safe-area-inset-left))}
 .logo{display:block;height:46px;margin:0 auto 30px}
 .cap{font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:#7FE3FF;text-align:center}
 h1{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;text-align:center;line-height:.92;font-size:clamp(54px,17vw,84px);margin:12px 0 16px;letter-spacing:.005em}
@@ -21,7 +21,8 @@ h1 span.g{background:linear-gradient(90deg,#43D9FF,#7C3DFF 30%,#B845FF 50%,#43D9
 .sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:24px}
 .sub b{color:var(--ink);font-weight:600}
 /* XP meter */
-.xp{position:sticky;top:env(safe-area-inset-top);z-index:5;margin:0 -6px 6px;padding:12px 14px;border-radius:18px;background:rgba(10,11,18,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
+/* always on screen: pinned to the top of the phone while they scroll */
+.xp{position:fixed;z-index:20;top:calc(env(safe-area-inset-top) + 10px);left:0;right:0;margin:0 auto;width:min(500px,calc(100% - 24px));padding:12px 14px;animation:drop .6s cubic-bezier(.2,1,.3,1) .3s both;border-radius:18px;background:rgba(10,11,18,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
 .xp .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
 .xp .lvl{color:#7FE3FF;transition:color .3s}
 .xp .pts{font-variant-numeric:tabular-nums;color:var(--mute)}
@@ -69,6 +70,7 @@ textarea{min-height:100px;resize:vertical}
 .file input{display:none}.file b{font-weight:600}.file em{color:var(--mute);font-style:normal;font-size:14px;display:block}
 #preview{display:none;width:100%;max-height:320px;object-fit:cover;border-radius:16px;margin-top:12px}
 .tick{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-size:15px;line-height:1.4;cursor:pointer}
+.tick[hidden],[hidden]{display:none!important}
 .tick input{width:20px;height:20px;margin-top:1px;accent-color:#7C3DFF;flex:none}
 /* banter */
 .banter{margin-top:38px;padding:22px 16px 18px;border-radius:22px;border:1.5px dashed rgba(255,197,107,.5);background:rgba(255,197,107,.05);position:relative}
@@ -94,6 +96,7 @@ button:disabled{opacity:.6}
 /* entrance */
 .in{opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,1,.3,1) forwards}
 @keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes drop{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
 @keyframes shimmer{to{background-position:-250% 0}}
 @keyframes pop{0%{transform:scale(.9)}100%{transform:scale(1)}}
 @keyframes plus{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
@@ -108,7 +111,7 @@ button:disabled{opacity:.6}
 <h1 class="in" style="animation-delay:.16s"><span class="w">Share</span> <span class="w">your</span> <span class="w g">win.</span></h1>
 <p class="sub in" style="animation-delay:.26s">This bit's for <b>real wins</b>, big or small.<br>Got banter? There's a box for it at the bottom 😏</p>
 
-<div class="xp in" id="xp" style="animation-delay:.34s"><div class="row"><span class="lvl" id="lvl">Warming up</span><span class="pts"><span id="pts">0</span> / 100 XP</span></div><div class="bar"><div class="fill" id="fill"></div></div><span class="plus" id="plus"></span></div>
+<div class="xp" id="xp" role="status" aria-label="Win progress"><div class="row"><span class="lvl" id="lvl">Warming up</span><span class="pts"><span id="pts">0</span> / 100 XP</span></div><div class="bar"><div class="fill" id="fill"></div></div><span class="plus" id="plus"></span></div>
 
 <form id="f" novalidate>
  <div class="step" data-xp="name"><label class="q" for="name"><span class="n">1</span>First name</label>
@@ -252,7 +255,7 @@ $('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new Form
       catch(e){try{lastWin.photoImg=await createImageBitmap(file);}catch(e2){}}}
     try{const c=await WinCard.draw(document.createElement('canvas'),lastWin);$('#cardimg').src=c.toDataURL('image/png');}catch(e){$('#cardimg').style.display='none';$('#savecard').style.display='none';}
     $('#lvlup').textContent='+'+$('#pts').textContent+' XP · '+$('#lvl').textContent;
-    $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);buzz([20,40,20]);confetti();}
+    $('#formwrap').style.display='none';$('#xp').style.display='none';$('#done').style.display='block';scrollTo(0,0);buzz([20,40,20]);confetti();}
   catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Share my win 🔥';}});
 update();
 </script></body></html>
