@@ -1,5 +1,5 @@
 // MeFit forms -> Notion: "Share your win" (MeFit Wins), waitlist, the member card form and the leaderboard photo form (MeFit Members). No dependencies (Node 18+).
-// Env: NOTION_TOKEN (internal integration secret, shared with the MeFit Wins page), PORT.
+// Env: NOTION_TOKEN (internal integration secret, shared with the MeFit Wins page), PORT. Auto-deploys from main (Render, On Commit).
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {Readable} from 'node:stream';
