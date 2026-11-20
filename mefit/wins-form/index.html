@@ -4,110 +4,255 @@
 @font-face{font-family:Anton;src:url(anton.woff2)}
 @font-face{font-family:Inter;font-weight:400;src:url(inter-latin-400-normal.woff2)}
 @font-face{font-family:Inter;font-weight:600;src:url(inter-latin-600-normal.woff2)}
-:root{--bg:#06070C;--ink:#F4F2EE;--mute:rgba(244,242,238,.62);--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05);--cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--grad:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF)}
+/* MeFit: night-sky black, charcoal panels, white type, the logo's cyan→violet as the only colour. Banter gets amber so it never looks like a win. */
+:root{color-scheme:dark;--bg:#06070C;--panel:#0E1017;--ink:#F4F2EE;--mute:rgba(244,242,238,.62);--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05);
+ --cyan:#43D9FF;--violet:#7C3DFF;--purple:#B845FF;--amber:#FFC56B;--grad:linear-gradient(90deg,#43D9FF,#7C3DFF 55%,#B845FF)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;
- background-image:radial-gradient(ellipse 80% 40% at 50% 18%,rgba(80,40,170,.42),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.2),transparent 70%)}
-main{max-width:520px;margin:0 auto;padding:36px 20px 60px}
-.logo{display:block;height:46px;margin:0 auto 34px}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 40% at 50% 14%,rgba(80,40,170,.45),transparent 70%),radial-gradient(ellipse 60% 30% at 85% 100%,rgba(30,120,130,.22),transparent 70%)}
+main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:30px max(20px,env(safe-area-inset-right)) 70px max(20px,env(safe-area-inset-left))}
+.logo{display:block;height:46px;margin:0 auto 30px}
 .cap{font-weight:600;text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:#7FE3FF;text-align:center}
-h1{font-family:Anton;font-weight:400;text-transform:uppercase;text-align:center;line-height:.95;font-size:56px;margin:12px 0 14px}
-h1 span{background:var(--grad);-webkit-background-clip:text;color:transparent}
-.sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:30px}
-label.q{display:block;font-weight:600;font-size:15px;margin:26px 0 10px}
+h1{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;text-align:center;line-height:.92;font-size:clamp(54px,17vw,84px);margin:12px 0 16px;letter-spacing:.005em}
+h1 .w{display:inline-block}
+h1 span.g{background:linear-gradient(90deg,#43D9FF,#7C3DFF 30%,#B845FF 50%,#43D9FF 70%,#7C3DFF);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 5s linear infinite}
+.sub{text-align:center;color:var(--mute);font-size:16px;line-height:1.5;margin-bottom:24px}
+.sub b{color:var(--ink);font-weight:600}
+/* XP meter */
+.xp{position:sticky;top:env(safe-area-inset-top);z-index:5;margin:0 -6px 6px;padding:12px 14px;border-radius:18px;background:rgba(10,11,18,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
+.xp .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
+.xp .lvl{color:#7FE3FF;transition:color .3s}
+.xp .pts{font-variant-numeric:tabular-nums;color:var(--mute)}
+.xp .bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:9px;overflow:hidden}
+.xp .fill{height:100%;width:0;border-radius:99px;background:var(--grad);box-shadow:0 0 14px rgba(124,61,255,.8);transition:width .6s cubic-bezier(.2,1.2,.4,1)}
+.xp.legend{border-color:rgba(184,69,255,.6);box-shadow:0 0 30px rgba(124,61,255,.45)}
+.xp.legend .lvl{color:#fff}
+.xp .plus{position:absolute;right:16px;top:-6px;font:600 13px Inter;color:var(--cyan);opacity:0;pointer-events:none}
+.xp .plus.go{animation:plus .9s ease-out}
+/* fields */
+.step{margin-top:28px}
+label.q{display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;margin-bottom:10px}
 label.q small{color:var(--mute);font-weight:400}
-input[type=text],textarea{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;color:var(--ink);font:400 17px Inter,sans-serif;padding:15px 16px;outline:none}
-input[type=text]:focus,textarea:focus{border-color:var(--violet)}
-textarea{min-height:120px;resize:vertical}
+.n{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;border:1.5px solid var(--line);color:var(--mute);transition:all .3s}
+.step.ok .n{border-color:transparent;background:var(--grad);color:#fff;box-shadow:0 0 12px rgba(124,61,255,.6)}
+input[type=text],textarea{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;color:var(--ink);font:400 17px Inter,sans-serif;padding:15px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
+input[type=text]:focus,textarea:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(124,61,255,.18)}
+textarea{min-height:100px;resize:vertical}
 .chips{display:flex;flex-wrap:wrap;gap:10px}
 .chips input{position:absolute;opacity:0;pointer-events:none}
-.chips span{display:inline-block;padding:11px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;user-select:none}
-.chips input:checked+span{border-color:transparent;background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;box-shadow:0 0 18px rgba(124,61,255,.35)}
+.chips span{display:inline-block;padding:11px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;user-select:none;transition:transform .15s}
+.chips span:active{transform:scale(.94)}
+.chips input:checked+span{border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box;box-shadow:0 0 18px rgba(124,61,255,.4);animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.chips input:focus-visible+span{outline:2px solid var(--cyan);outline-offset:2px}
 .stack{display:grid;gap:10px}.stack span{display:block;border-radius:16px}
+/* live story card */
+.live{margin-top:30px;border-radius:24px;padding:22px 20px 20px;position:relative;overflow:hidden;background:radial-gradient(ellipse 90% 60% at 50% 0%,rgba(110,55,230,.5),transparent 70%),#080912;border:1.5px solid transparent;background-clip:padding-box}
+.live::before{content:"";position:absolute;inset:-1.5px;border-radius:24px;padding:1.5px;background:var(--grad);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.7}
+.live .tag{font-size:11px;font-weight:600;letter-spacing:.28em;color:#7FE3FF;text-transform:uppercase;text-align:center}
+.live .kind{display:table;margin:12px auto 0;padding:6px 14px;border-radius:99px;border:1.5px solid rgba(124,61,255,.6);font-size:13px;font-weight:600}
+.live .kind:empty{display:none}
+.live .txt{margin:14px 0 0;text-align:center;font-weight:600;font-size:20px;line-height:1.3;min-height:52px;word-break:break-word}
+.live .txt.ph{color:rgba(244,242,238,.32)}
+.live .quote{text-align:center;color:var(--mute);font-size:14px;font-style:italic;margin-top:8px}
+.live .quote:empty{display:none}
+.live .who{margin-top:14px;text-align:center;font-family:Anton,Impact,sans-serif;font-size:34px;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.live .foot{margin-top:6px;text-align:center;font-size:12px;color:var(--mute)}
+/* story panel */
+.story{margin-top:30px;padding:20px 16px 22px;border-radius:22px;border:1.5px solid var(--line);background:rgba(14,16,23,.7)}
+.story h2{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:28px;text-transform:uppercase;letter-spacing:.01em}
+.story h2 em{font-style:normal;font-family:Inter;font-weight:600;font-size:12px;letter-spacing:.2em;color:var(--cyan);vertical-align:middle;margin-left:8px;padding:4px 9px;border-radius:99px;border:1px solid rgba(67,217,255,.4)}
+.story>p{color:var(--mute);font-size:14px;line-height:1.45;margin-top:6px}
+.story .step{margin-top:20px}
 .file{display:flex;align-items:center;gap:14px;padding:16px;border:1.5px dashed var(--line);border-radius:16px;background:var(--card);cursor:pointer}
 .file input{display:none}.file b{font-weight:600}.file em{color:var(--mute);font-style:normal;font-size:14px;display:block}
 #preview{display:none;width:100%;max-height:320px;object-fit:cover;border-radius:16px;margin-top:12px}
+.tick{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-size:15px;line-height:1.4;cursor:pointer}
+.tick input{width:20px;height:20px;margin-top:1px;accent-color:#7C3DFF;flex:none}
+/* banter */
+.banter{margin-top:38px;padding:22px 16px 18px;border-radius:22px;border:1.5px dashed rgba(255,197,107,.5);background:rgba(255,197,107,.05);position:relative}
+.banter .stamp{position:absolute;right:14px;top:-13px;transform:rotate(4deg);background:var(--amber);color:#1a1205;font:600 11px Inter;letter-spacing:.18em;padding:6px 10px;border-radius:6px;text-transform:uppercase}
+.banter h2{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:30px;text-transform:uppercase;color:var(--amber)}
+.banter p{margin:6px 0 14px;color:var(--mute);font-size:14px;line-height:1.45}
+.banter textarea{min-height:80px}
+.banter textarea:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(255,197,107,.15)}
 .hp{position:absolute;left:-9999px}
-button{margin-top:34px;width:100%;border:0;border-radius:18px;padding:19px;font:600 17px Inter,sans-serif;color:#fff;background:var(--grad);cursor:pointer;box-shadow:0 10px 40px rgba(124,61,255,.4)}
+button{margin-top:34px;width:100%;border:0;border-radius:18px;padding:19px;font:600 17px Inter,sans-serif;color:#fff;background:var(--grad);background-size:200% 100%;cursor:pointer;box-shadow:0 10px 40px rgba(124,61,255,.45);transition:transform .15s,background-position .6s}
+button:active{transform:scale(.98)}
+button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 button:disabled{opacity:.6}
+.ready #go{animation:breathe 2.2s ease-in-out infinite}
 .err{color:#FF8A8A;margin-top:14px;text-align:center;font-size:15px;min-height:20px}
 .note{color:var(--mute);font-size:13px;text-align:center;margin-top:18px;line-height:1.5}
-#done{display:none;text-align:center;padding-top:40px}
-#done .badge{width:130px;height:130px;margin:0 auto 26px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:64px;box-shadow:0 0 60px rgba(124,61,255,.6)}
+#done{display:none;text-align:center;padding-top:20px}
 #done a{color:var(--cyan)}
-#cardimg{display:block;width:100%;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 50px rgba(124,61,255,.35);animation:pop .6s cubic-bezier(.3,1.5,.5,1) both}
+#cardimg{display:block;width:100%;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 50px rgba(124,61,255,.35);animation:rise .8s cubic-bezier(.3,1.4,.5,1) .15s both}
 #done button{margin-top:22px}
-@keyframes pop{from{opacity:0;transform:scale(.9) translateY(16px)}to{opacity:1;transform:none}}
-</style></head><body><main>
-<img class="logo" src="logo.png" alt="MeFit Academy">
+.lvlup{font-family:Anton,Impact,sans-serif;font-size:20px;letter-spacing:.06em;color:#fff;margin:4px 0 10px;opacity:.9}
+#fx{position:fixed;inset:0;z-index:50;pointer-events:none;width:100%;height:100%}
+/* entrance */
+.in{opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,1,.3,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes shimmer{to{background-position:-250% 0}}
+@keyframes pop{0%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes plus{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
+@keyframes breathe{50%{box-shadow:0 10px 50px rgba(124,61,255,.75),0 0 0 6px rgba(124,61,255,.12)}}
+@media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.in{opacity:1;transform:none}}
+</style></head><body>
+<canvas id="sky" aria-hidden="true"></canvas><div class="glow"></div>
+<main>
+<img class="logo in" src="logo.png" alt="MeFit Academy">
 <section id="formwrap">
-<div class="cap">Feel Good Friday</div>
-<h1>Share your <span>win.</span></h1>
-<p class="sub">Not a check-in! This is just for celebrating your wins, big or small 🙌</p>
+<div class="cap in" style="animation-delay:.08s">Feel Good Friday</div>
+<h1 class="in" style="animation-delay:.16s"><span class="w">Share</span> <span class="w">your</span> <span class="w g">win.</span></h1>
+<p class="sub in" style="animation-delay:.26s">This bit's for <b>real wins</b>, big or small.<br>Got banter? There's a box for it at the bottom 😏</p>
+
+<div class="xp in" id="xp" style="animation-delay:.34s"><div class="row"><span class="lvl" id="lvl">Warming up</span><span class="pts"><span id="pts">0</span> / 100 XP</span></div><div class="bar"><div class="fill" id="fill"></div></div><span class="plus" id="plus"></span></div>
+
 <form id="f" novalidate>
- <label class="q" for="name">First name</label>
- <input type="text" id="name" name="name" autocomplete="given-name" maxlength="60" required>
- <label class="q" for="win">What's your win?</label>
- <textarea id="win" name="win" maxlength="1500" placeholder="A PB, better sleep, more energy, jeans feeling looser, turning up when you didn't fancy it…" required></textarea>
- <label class="q">What kind of win? <small>(optional)</small></label>
+ <div class="step" data-xp="name"><label class="q" for="name"><span class="n">1</span>First name</label>
+ <input type="text" id="name" name="name" autocomplete="given-name" maxlength="60"></div>
+
+ <div class="step" data-xp="kind"><label class="q"><span class="n">2</span>What kind of win?</label>
  <div class="chips">
   <label><input type="radio" name="kind" value="PB 🏋️"><span>🏋️ PB</span></label>
+  <label><input type="radio" name="kind" value="Consistency 🔥"><span>🔥 Every session done</span></label>
   <label><input type="radio" name="kind" value="Energy & sleep 😴"><span>😴 Energy & sleep</span></label>
   <label><input type="radio" name="kind" value="Confidence 💪"><span>💪 Confidence</span></label>
-  <label><input type="radio" name="kind" value="Clothes & body 👖"><span>👖 Clothes & body</span></label>
-  <label><input type="radio" name="kind" value="Consistency 🔥"><span>🔥 Consistency</span></label>
+  <label><input type="radio" name="kind" value="Clothes & body 👖"><span>👖 Clothes fit</span></label>
+  <label><input type="radio" name="kind" value="Good choice 🥗"><span>🥗 Good choice</span></label>
   <label><input type="radio" name="kind" value="Something else ✨"><span>✨ Something else</span></label>
+ </div></div>
+
+ <div class="step" data-xp="win"><label class="q" for="win"><span class="n">3</span>What did you do?</label>
+ <textarea id="win" name="win" maxlength="600" placeholder="Hip thrust 80kg for 8. Didn't miss a session all week. Went to the work do and still trained Saturday…"></textarea></div>
+
+ <div class="live" aria-live="polite">
+  <div class="tag">Your story card · live</div>
+  <div class="kind" id="lkind"></div>
+  <p class="txt ph" id="ltxt">Your win shows up here as you type…</p>
+  <p class="quote" id="lquote"></p>
+  <div class="who" id="lwho">You</div>
+  <div class="foot">Feel Good Friday · MeFit Academy</div>
  </div>
- <label class="q">Add a photo or short video <small>(optional)</small></label>
+
+ <div class="story">
+  <h2>Make it a story <em>+30 XP</em></h2>
+  <p>Optional, but these are what get your win on the story. A sentence each is plenty.</p>
+  <div class="step" data-xp="before"><label class="q" for="before"><span class="n">A</span>What was it like before? <small>(optional)</small></label>
+  <input type="text" id="before" name="before" maxlength="200" placeholder="First week I could barely do 40kg"></div>
+  <div class="step" data-xp="feel"><label class="q" for="feel"><span class="n">B</span>How did it feel? <small>(optional)</small></label>
+  <input type="text" id="feel" name="feel" maxlength="200" placeholder="Felt like a proper superhero"></div>
+  <div class="step" data-xp="helped"><label class="q" for="helped"><span class="n">C</span>What helped? <small>(optional)</small></label>
+  <input type="text" id="helped" name="helped" maxlength="200" placeholder="Sticking to 3 sessions, prepping lunches, earlier nights"></div>
+ </div>
+
+ <div class="step" data-xp="photo"><label class="q"><span class="n">4</span>Add a photo or short video <small>(optional)</small></label>
  <label class="file"><input type="file" id="photo" accept="image/*,video/*"><div style="font-size:30px">📸</div><div><b id="fname">Tap to add</b><em>Photos work best. Long videos are best sent on WhatsApp.</em></div></label>
- <img id="preview" alt="">
- <label class="q">Happy for it to be shared?</label>
+ <img id="preview" alt=""></div>
+
+ <div class="step" data-xp="share"><label class="q"><span class="n">5</span>Happy for it to be shared?</label>
  <div class="chips stack">
   <label><input type="radio" name="share" value="Yes — with my first name"><span>✅ Yes, with my first name</span></label>
   <label><input type="radio" name="share" value="Yes — initial only"><span>🔤 Yes, initial only</span></label>
   <label><input type="radio" name="share" value="Yes — anonymously"><span>🕶️ Yes, anonymously</span></label>
   <label><input type="radio" name="share" value="No — just for Matt"><span>🔒 No, just for Matt</span></label>
  </div>
+ <label class="tick" id="photook" hidden><input type="checkbox" id="photoConsent" name="photoConsent" value="yes"><span>You can use my photo or video on the story too</span></label></div>
+
+ <div class="banter">
+  <span class="stamp">Off the record</span>
+  <h2>🍻 Banter corner</h2>
+  <p>Roast Matt, gym confessions, mince pie crimes. This goes to Matt only. It's never posted and never counted as your win.</p>
+  <textarea id="banter" name="banter" maxlength="600" placeholder="Matt's playlist is a war crime…"></textarea>
+ </div>
+
  <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
  <input type="hidden" name="m" id="m">
  <button id="go" type="submit">Share my win 🔥</button>
- <div class="err" id="err"></div>
+ <div class="err" id="err" role="alert"></div>
  <p class="note">Only Matt sees what you send. Nothing is posted unless you say you're happy to share, and only in the way you choose.</p>
 </form></section>
-<section id="done"><div class="cap">Win logged</div><h1>Proud of <span>you.</span></h1>
+
+<section id="done"><div class="cap">Win logged</div><h1>Proud of <span class="g">you.</span></h1>
+<p class="lvlup" id="lvlup"></p>
 <p class="sub">Here's your win as a card. Save it, keep it, share it if you like.</p>
 <img id="cardimg" alt="Your win as a MeFit card">
 <button id="savecard" type="button">Save my card 📲</button>
 <p class="sub" style="margin-top:22px"><a href="/" id="mywins" hidden>See all your wins</a><span id="sep" hidden> · </span><a href="/" id="again">Share another win</a></p></section>
 </main>
+<canvas id="fx" aria-hidden="true"></canvas>
 <script src="wincard.js?v=4"></script>
 <script>
-const $=s=>document.querySelector(s);let file=null,lastWin=null;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];let file=null,lastWin=null;
+const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const buzz=n=>{try{navigator.vibrate&&navigator.vibrate(n)}catch(e){}};
+
+/* starry sky: slow drift, twinkle, parallax on scroll */
+(()=>{const c=$('#sky'),x=c.getContext('2d');let W,H,st=[],dpr=Math.min(2,devicePixelRatio||1);
+  const size=()=>{W=c.width=innerWidth*dpr;H=c.height=innerHeight*dpr;st=Array.from({length:Math.round(innerWidth*innerHeight/5200)},()=>({x:Math.random()*W,y:Math.random()*H,r:(Math.random()*1.3+.3)*dpr,z:Math.random()*.8+.2,p:Math.random()*6.3}))};
+  size();addEventListener('resize',size);
+  const draw=t=>{x.clearRect(0,0,W,H);const sy=scrollY*dpr;
+    for(const s of st){const y=((s.y-sy*s.z*.25)%H+H)%H,a=.25+.55*s.z*(calm?1:.6+.4*Math.sin(t/900+s.p));x.globalAlpha=a;x.fillStyle=s.z>.85?'#BFF3FF':'#fff';x.beginPath();x.arc(s.x+(calm?0:Math.sin(t/4000+s.p)*2*dpr),y,s.r,0,7);x.fill();}
+    if(!calm)requestAnimationFrame(draw)};
+  requestAnimationFrame(draw);if(calm)addEventListener('scroll',()=>requestAnimationFrame(draw),{passive:true});})();
+
+/* XP meter + live card */
+const XP={name:15,kind:10,win:25,share:20,before:10,feel:10,helped:10},LV=[[0,'Warming up'],[15,'Getting going'],[40,'On a roll'],[70,'Win logged'],[90,'Story ready'],[100,'Legend win 🏆']];
+let lastPts=0;
+const has=k=>{const fd=new FormData($('#f'));if(k==='photo')return !!file;const v=fd.get(k);return !!(v&&String(v).trim());};
+function dispName(){const n=$('#name').value.trim(),s=(new FormData($('#f'))).get('share')||'';
+  if(/initial/i.test(s))return n?n[0].toUpperCase()+'.':'You';if(/anonym/i.test(s))return 'A MeFit member';if(/^No/.test(s))return 'Just for Matt';return n||'You';}
+function update(){let pts=0;
+  $$('.step[data-xp]').forEach(el=>{const k=el.dataset.xp,ok=has(k);el.classList.toggle('ok',ok);if(ok)pts+=(XP[k]||0);});
+  pts=Math.min(100,pts);$('#pts').textContent=pts;$('#fill').style.width=pts+'%';
+  let name=LV[0][1];for(const [a,n] of LV)if(pts>=a)name=n;$('#lvl').textContent=name;$('#xp').classList.toggle('legend',pts>=100);
+  if(pts>lastPts&&!calm){const p=$('#plus');p.textContent='+'+(pts-lastPts)+' XP';p.classList.remove('go');void p.offsetWidth;p.classList.add('go');buzz(12);}
+  lastPts=pts;
+  const ready=has('name')&&has('win')&&has('share');$('#f').classList.toggle('ready',ready);
+  const w=$('#win').value.trim(),kind=(new FormData($('#f'))).get('kind')||'';
+  $('#ltxt').textContent=w||'Your win shows up here as you type…';$('#ltxt').classList.toggle('ph',!w);
+  $('#lkind').textContent=kind;$('#lquote').textContent=$('#feel').value.trim()?'“'+$('#feel').value.trim()+'”':'';$('#lwho').textContent=dispName();}
+$('#f').addEventListener('input',update);$('#f').addEventListener('change',update);
+
+/* member link prefill */
 const M=new URLSearchParams(location.search).get('m')||'';
 if(M){$('#m').value=M;$('#again').href='/?m='+encodeURIComponent(M);$('#mywins').href='/wins?m='+encodeURIComponent(M);$('#mywins').hidden=false;$('#sep').hidden=false;
-  fetch('/api/member?m='+encodeURIComponent(M)).then(r=>r.ok?r.json():null).then(j=>{if(j&&!$('#name').value)$('#name').value=j.cardName||j.first||'';}).catch(()=>{});}
+  fetch('/api/member?m='+encodeURIComponent(M)).then(r=>r.ok?r.json():null).then(j=>{if(j&&!$('#name').value){$('#name').value=j.cardName||j.first||'';update();}}).catch(()=>{});}
 $('#savecard').addEventListener('click',()=>{if(lastWin)WinCard.save(lastWin,$('#savecard'));});
+
 async function shrink(f){ // photos -> max 1600px JPEG so they upload fast and stay under size limits
   if(!f.type.startsWith('image/')||f.type==='image/gif')return f;
   try{const bmp=await createImageBitmap(f);const s=Math.min(1,1600/Math.max(bmp.width,bmp.height));
     const c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
     c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
     const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));return b?new File([b],(f.name||'win').replace(/\.\w+$/,'')+'.jpg',{type:'image/jpeg'}):f;}catch(e){return f;}}
-$('#photo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('#fname').textContent=f.name||'Added';
-  file=await shrink(f);if(file.type.startsWith('image/')){$('#preview').src=URL.createObjectURL(file);$('#preview').style.display='block';}else $('#preview').style.display='none';});
+$('#photo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('#fname').textContent=f.name||'Added';$('#photook').hidden=false;
+  file=await shrink(f);if(file.type.startsWith('image/')){$('#preview').src=URL.createObjectURL(file);$('#preview').style.display='block';}else $('#preview').style.display='none';update();});
+
+/* confetti in brand colours */
+function confetti(){if(calm)return;const c=$('#fx'),x=c.getContext('2d'),d=Math.min(2,devicePixelRatio||1);c.width=innerWidth*d;c.height=innerHeight*d;
+  const cols=['#43D9FF','#7C3DFF','#B845FF','#F4F2EE'],P=Array.from({length:140},()=>({x:c.width/2,y:c.height*.35,vx:(Math.random()-.5)*22*d,vy:(-Math.random()*20-6)*d,w:(Math.random()*8+4)*d,h:(Math.random()*5+3)*d,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[Math.random()*4|0]}));
+  const t0=performance.now();(function f(t){x.clearRect(0,0,c.width,c.height);const k=Math.max(0,1-(t-t0)/2600);
+    for(const p of P){p.vy+=.6*d;p.vx*=.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.globalAlpha=k;x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore();}
+    if(k>0)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height);})(t0);}
+
 $('#f').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData($('#f'));$('#err').textContent='';
   if(!fd.get('name').trim()||!fd.get('win').trim()){$('#err').textContent='Pop your name and your win in first 🙂';return;}
   if(!fd.get('share')){$('#err').textContent='Let me know if you\'re happy for it to be shared.';return;}
   if(file)fd.append('photo',file);
   $('#go').disabled=true;$('#go').textContent='Sending…';
-  try{const r=await fetch('/submit',{method:'POST',body:fd});const j=await r.json();
+  try{const j=window.PREVIEW?{ok:true}:await (await fetch('/submit',{method:'POST',body:fd})).json();
     if(!j.ok)throw new Error(j.msg||'Something went wrong.');
     if(j.fileNote)$('#done .sub').insertAdjacentHTML('afterbegin','Your win is saved, but the file was too big to attach, so send it to Matt on WhatsApp. ');
     lastWin={name:fd.get('name'),win:fd.get('win'),kind:fd.get('kind')||'',share:fd.get('share'),date:new Date().toISOString()};
-    if(file&&/^image\//.test(file.type||'image/')){ // load the photo the same way the preview does (works on every iPhone), bitmap as a fallback
+    if(file&&/^image\//.test(file.type||'image/')){
       try{const im=new Image();im.src=URL.createObjectURL(file);await (im.decode?im.decode():new Promise((ok,no)=>{im.onload=ok;im.onerror=no;}));lastWin.photoImg=im;}
       catch(e){try{lastWin.photoImg=await createImageBitmap(file);}catch(e2){}}}
     try{const c=await WinCard.draw(document.createElement('canvas'),lastWin);$('#cardimg').src=c.toDataURL('image/png');}catch(e){$('#cardimg').style.display='none';$('#savecard').style.display='none';}
-    $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);}
+    $('#lvlup').textContent='+'+$('#pts').textContent+' XP · '+$('#lvl').textContent;
+    $('#formwrap').style.display='none';$('#done').style.display='block';scrollTo(0,0);buzz([20,40,20]);confetti();}
   catch(err){$('#err').textContent=err.message||'Something went wrong. Please try again.';$('#go').disabled=false;$('#go').textContent='Share my win 🔥';}});
+update();
 </script></body></html>

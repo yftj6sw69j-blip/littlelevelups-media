@@ -10,7 +10,7 @@ const DS = '956ccced-2859-4460-a02c-10865f085a4e';
 const WL_DS = '7d3b6bfa-af88-4a6e-b7d7-d890c6ba8394'; // MeFit Waitlist
 const WL_LISTS = ['Strong at 40', 'Hybrid 8', 'Other'];
 const ORIGINS = ['https://mefitacademy.co.uk', 'https://www.mefitacademy.co.uk', 'https://app.mefitacademy.co.uk'];
-const KINDS = ['PB 🏋️', 'Energy & sleep 😴', 'Confidence 💪', 'Clothes & body 👖', 'Consistency 🔥', 'Something else ✨'];
+const KINDS = ['PB 🏋️', 'Energy & sleep 😴', 'Confidence 💪', 'Clothes & body 👖', 'Consistency 🔥', 'Good choice 🥗', 'Something else ✨'];
 const SHARE = ['Yes — with my first name', 'Yes — initial only', 'Yes — anonymously', 'No — just for Matt'];
 const MEM_DB = '0a55e8be42694e62ae87928c862f8132', MEM_DS = '203ca24e-dad7-407d-a3b4-00a3c60a52ea'; // MeFit Members
 const CARD_SHARE = ['Group + Instagram', 'Group only', 'Just between us'];
@@ -44,6 +44,11 @@ async function createWin(f) {
     'Happy for it to be shared?': {select: {name: share}},
   };
   if (KINDS.includes(kind)) props['What kind of win?'] = {select: {name: kind}};
+  // Win Builder extras (all optional). Banter is stored separately so it is never treated as the win.
+  for (const [field, prop, n] of [['before', 'Before', 200], ['feel', 'How it felt', 200], ['helped', 'What helped', 200], ['banter', 'Banter (Matt only)', 600]]) {
+    const v = clip(f.get(field), n); if (v) props[prop] = {rich_text: [{text: {content: v}}]};
+  }
+  if (f.get('photoConsent')) props['Photo OK for story'] = {checkbox: true};
   // link the win to the member: their personal link (?m=) first, otherwise a first name that matches exactly one member
   let member = null;
   try { member = (await memberPage(f.get('m')))?.id || await memberByFirstName(name); } catch (e) { console.error('member link', e.message); }
